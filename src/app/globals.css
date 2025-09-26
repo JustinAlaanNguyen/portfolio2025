@@ -1,0 +1,680 @@
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  font-family: system-ui, sans-serif;
+  overflow-y: scroll; /* allow vertical scrolling */
+  scroll-behavior: smooth; /* nice scrolling */
+}
+#canvas {
+  min-height: 100vh;
+  width: 100vw;
+  /* ❌ remove this line
+  background-image: url("http://www.pictures-croatia.com/primosten/primosten-2m6e.jpg");
+  */
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+}
+
+/* Description box */
+.description {
+  position: absolute;
+  top: 28px;
+  left: 6%;
+  width: 20%;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Floor selector */
+#floorSelect {
+  position: absolute;
+  right: 7%;
+  top: 18%;
+  width: 120px;
+  background: #fff;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  text-align: center;
+}
+#floorSelect h4 {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+#floorSelect ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+#floorSelect li {
+  width: 48px;
+  height: 48px;
+  line-height: 48px;
+  text-align: center;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+  background: #fff;
+}
+#floorSelect li:hover {
+  transform: translateY(-4px);
+  background: #656565;
+  color: #fff;
+}
+#floorSelect li.active {
+  background: #333;
+  color: #fff;
+  border-color: #222;
+}
+
+/* Tower container (floors stacked vertically) */
+.tower {
+  display: flex;
+  flex-direction: column-reverse; /* bottom floor at bottom */
+  align-items: center;
+  position: relative;
+  margin-bottom: 0;
+}
+/* Tower container */
+.b {
+  position: relative;
+  margin: 0 auto;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.floor {
+  display: grid;
+  gap: 10px;
+  background: #135;
+  border: 10px solid #123;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  overflow: hidden; /* makes windows respect the rounded corners */
+  position: relative;
+}
+
+.window {
+  width: 100%;
+  height: 100%;
+  background: #222;
+  transition: background 0.4s ease;
+}
+.window.on {
+  background: #ffd77a;
+}
+
+/* ---- Floor sizes ---- */
+/* Floor scaling */
+.floor.b1 {
+  width: 33vw;
+  height: 50vh;
+}
+.floor.b2 {
+  width: 26vw;
+  height: 40vh;
+}
+.floor.b3 {
+  width: 20vw;
+  height: 30vh;
+}
+.floor.b4 {
+  width: 15vw;
+  height: 20vh;
+}
+.floor.b5 {
+  width: 10vw;
+  height: 20vh;
+}
+
+/* Elevator shaft + cab */
+#elevatorShaft {
+  background: #362e2b;
+  width: 70%;
+  height: 90%;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Elevator container with smooth interpolation */
+#elevatorContainer {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  transition: bottom 2s cubic-bezier(0.65, 0, 0.35, 1),
+    width 2s cubic-bezier(0.65, 0, 0.35, 1),
+    height 2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Shadow overlays when moving */
+#elevatorContainer::before,
+#elevatorContainer::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 10%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+#elevatorContainer::before {
+  top: -10%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
+}
+#elevatorContainer::after {
+  bottom: -10%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+}
+#elevatorContainer.moving::before,
+#elevatorContainer.moving::after {
+  opacity: 1;
+}
+
+/* Shake/stretch animation */
+@keyframes travel-shake {
+  0%,
+  100% {
+    transform: translateX(-50%) scaleX(1) scaleY(1);
+  }
+  25% {
+    transform: translateX(-50%) scaleX(1.01) scaleY(0.99);
+  }
+  50% {
+    transform: translateX(-50%) scaleX(0.99) scaleY(1.01);
+  }
+  75% {
+    transform: translateX(-50%) scaleX(1.02) scaleY(0.98);
+  }
+}
+#elevatorContainer.moving {
+  animation: travel-shake 1s ease-in-out infinite;
+}
+/* Elevator cab */
+#elevator {
+  width: 100%;
+  height: 100%;
+  background: #ccc;
+  background-image: url("http://www.riversideelevators.com/img/elevator_inside.jpg");
+  background-size: cover;
+  display: flex;
+  box-shadow: 0 -10px 0 #333;
+  overflow: hidden; /* ⬅️ keeps doors inside cab */
+}
+
+/* Doors */
+.door {
+  width: 50%;
+  height: 100%;
+  transition: transform 300ms ease-in-out;
+}
+.door.left {
+  background: #aaa;
+}
+.door.right {
+  background: #999;
+}
+.door.left.open {
+  transform: translateX(-100%);
+}
+.door.right.open {
+  transform: translateX(100%);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  #building {
+    width: 62vw;
+    height: 70vh;
+  }
+  .description {
+    display: none;
+  }
+  #floorSelect {
+    right: 4%;
+    top: 10%;
+  }
+}
+
+/* Street container */
+.street {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  z-index: 0; /* behind building */
+  height: 5%;
+}
+
+/* Sidewalks */
+.sidewalk {
+  background: #bbb;
+  height: 40px;
+  border-top: 4px solid #888;
+  border-bottom: 4px solid #888;
+}
+.sidewalk.top {
+  border-bottom: 4px solid #555; /* edge shading */
+}
+.sidewalk.bottom {
+  border-top: 4px solid #555;
+}
+
+/* Road */
+.road {
+  background: #222;
+  height: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Lane markings */
+.lane-markings {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: repeating-linear-gradient(
+    to right,
+    white 0 40px,
+    transparent 40px 80px
+  );
+  transform: translateY(-50%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.sky {
+  position: absolute;
+    bottom: 80px;
+  left: 0;
+   min-height: 100%; 
+  width: 100vw;
+  z-index: 0;
+   overflow: hidden; 
+  background: #060010;
+  background: -moz-linear-gradient(
+    top,
+    #060010 0%,
+    #060010 6%,
+    #090016 11%,
+    #070016 20%,
+    #0a0121 48%,
+    #0a0127 55%,
+    #0a0129 57%,
+    #0c012b 62%,
+    #0e0131 68%,
+    #0d012f 69%,
+    #18023c 78%,
+    #19023e 79%,
+    #19023e 79%,
+    #1c0242 81%,
+    #22034b 85%,
+    #2e045a 92%,
+    #2f045e 96%,
+    #340464 98%,
+    #370569 100%
+  );
+  background: -webkit-linear-gradient(
+    top,
+    #060010 0%,
+    #060010 6%,
+    #090016 11%,
+    #070016 20%,
+    #0a0121 48%,
+    #0a0127 55%,
+    #0a0129 57%,
+    #0c012b 62%,
+    #0e0131 68%,
+    #0d012f 69%,
+    #18023c 78%,
+    #19023e 79%,
+    #19023e 79%,
+    #1c0242 81%,
+    #22034b 85%,
+    #2e045a 92%,
+    #2f045e 96%,
+    #340464 98%,
+    #370569 100%
+  );
+  background: linear-gradient(
+    to bottom,
+    #060010 0%,
+    #060010 6%,
+    #090016 11%,
+    #070016 20%,
+    #0a0121 48%,
+    #0a0127 55%,
+    #0a0129 57%,
+    #0c012b 62%,
+    #0e0131 68%,
+    #0d012f 69%,
+    #18023c 78%,
+    #19023e 79%,
+    #19023e 79%,
+    #1c0242 81%,
+    #22034b 85%,
+    #2e045a 92%,
+    #2f045e 96%,
+    #340464 98%,
+    #370569 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(
+      startColorstr="#060010",
+      endColorstr="#370569",
+      GradientType=0
+    );
+
+  transform: scale(1);
+  z-index: -1;
+}
+
+.mountains {
+  position: absolute;
+  height: 80px;
+  width: 100%;
+  bottom: 0px;
+  left: 0px;
+  z-index: 2;
+}
+
+.light-base {
+  position: absolute;
+  bottom: -80px;
+  left: 10vw;
+  width: 80vw;
+  height: 100px;
+  border-radius: 50%;
+  box-shadow: -0px -10px 30px 10px #ffc1a0, -0px -20px 40px 20px #fe9c7f,
+    -0px -30px 60px 30px #be6590, -0px -50px 150px 75px #632b6c;
+  background-color: #ffc1a0;
+  z-index: 1;
+}
+
+.mountains-base {
+  content: "";
+
+  background: -moz-linear-gradient(
+    top,
+    rgba(55, 5, 105, 0) 0%,
+    rgba(9, 0, 22, 1) 100%
+  );
+  background: -webkit-linear-gradient(
+    top,
+    rgba(55, 5, 105, 0) 0%,
+    rgba(9, 0, 22, 1) 100%
+  );
+  background: linear-gradient(
+    to bottom,
+    rgba(55, 5, 105, 0) 0%,
+    rgba(9, 0, 22, 1) 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(
+      startColorstr="#00370569",
+      endColorstr="#090016",
+      GradientType=0
+    );
+
+  width: 100%;
+  height: 100px;
+  position: absolute;
+  bottom: -10px;
+  z-index: 3;
+}
+
+.mountains-base:after {
+  content: "";
+
+  background: -moz-linear-gradient(
+    top,
+    rgba(55, 5, 105, 0) 0%,
+    rgba(9, 0, 22, 1) 100%
+  );
+  background: -webkit-linear-gradient(
+    top,
+    rgba(55, 5, 105, 0) 0%,
+    rgba(9, 0, 22, 1) 100%
+  );
+  background: linear-gradient(
+    to bottom,
+    rgba(55, 5, 105, 0) 0%,
+    rgba(9, 0, 22, 1) 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(
+      startColorstr="#00370569",
+      endColorstr="#090016",
+      GradientType=0
+    );
+  width: 100%;
+  height: 20px;
+  position: absolute;
+  bottom: 0px;
+  z-index: 3;
+}
+
+.mountains-base:before {
+  content: "";
+
+  background: -moz-linear-gradient(
+    top,
+    rgba(55, 5, 105, 0) 0%,
+    rgba(9, 0, 22, 1) 100%
+  );
+  background: -webkit-linear-gradient(
+    top,
+    rgba(55, 5, 105, 0) 0%,
+    rgba(9, 0, 22, 1) 100%
+  );
+  background: linear-gradient(
+    to bottom,
+    rgba(55, 5, 105, 0) 0%,
+    rgba(9, 0, 22, 1) 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(
+      startColorstr="#00370569",
+      endColorstr="#090016",
+      GradientType=0
+    );
+  width: 100%;
+  height: 15px;
+  position: absolute;
+  bottom: 10px;
+  z-index: 2;
+}
+
+.mountains > [class^="mountain"],
+.mountains > [class^="mountain"]:after,
+.mountains > [class^="mountain"]:before,
+.mountains > [class^="land"],
+.mountains > [class^="land"]:after,
+.mountains > [class^="land"]:before {
+  background: #110124;
+  box-shadow: 0px 0px 50px 5px rgba(255, 255, 255, 0.2);
+  position: absolute;
+  bottom: 0px;
+}
+
+.mountain-2 {
+  width: 60px;
+  height: 60px;
+  bottom: -20px !important;
+  left: -10px;
+  transform: rotate(45deg);
+  border-top-left-radius: 10px;
+}
+
+.mountain-1 {
+  width: 100px;
+  height: 100px;
+  bottom: -40px !important;
+  left: 10px;
+  transform: rotate(45deg);
+  border-top-left-radius: 10px;
+}
+
+.land-1 {
+  width: 30%;
+  height: 20px;
+  border-top-right-radius: 100%;
+}
+
+.land-2 {
+  width: 60%;
+  height: 15px;
+  left: 30%;
+  border-top-left-radius: 200%;
+  border-top-right-radius: 200%;
+}
+
+.land-3 {
+  width: 20%;
+  height: 20px;
+  left: 80%;
+  border-top-left-radius: 100%;
+}
+
+.stars {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  transition: all 10s linear;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background-color: white;
+  opacity: 0.8;
+}
+
+.blink {
+  animation: blink ease-in-out infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.star-0 {
+  height: 0.5px;
+  width: 0.5px;
+}
+
+.star-1 {
+  height: 1px;
+  width: 1px;
+}
+
+.star-2 {
+  height: 1.5px;
+  width: 1.5px;
+}
+
+.star-3 {
+  height: 2px;
+  width: 2px;
+}
+
+.star-4 {
+  height: 2.5px;
+  width: 2.5px;
+  box-shadow: 0px 0px 6px 1px rgba(255, 255, 255, 0.5);
+}
+
+.star-5 {
+  height: 2.5px;
+  width: 2.5px;
+  box-shadow: 0px 0px 6px 1px rgba(255, 255, 255, 0.7);
+}
+
+.stars-cross {
+  position: absolute;
+  top: 10vh;
+  left: 0px;
+  width: 120vw;
+  height: 20vh;
+  transform: rotate(20deg);
+  transform-origin: top left;
+}
+
+.stars-cross-aux {
+  position: absolute;
+  top: 0vh;
+  left: 10vw;
+  width: 120vw;
+  height: 10vh;
+  transform: rotate(20deg);
+  transform-origin: top left;
+}
+
+.stars-cross > .blur,
+.stars-cross-aux > .blur {
+  position: absolute;
+  border-radius: 50%;
+  background-color: white;
+  opacity: 1;
+  filter: blur(15px);
+  width: 5px;
+  height: 10px;
+}
+
+.city-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 5vw;
+  position: relative;
+  margin-bottom: 4%;
+}
+
+.decor-tower {
+  position: relative;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.decor-floor {
+  width: 100%;
+}
+
+.decor-window {
+  width: 100%;
+  height: 100%;
+}
+
+.decor-window.on {
+  background: #ffd966 !important;
+}
