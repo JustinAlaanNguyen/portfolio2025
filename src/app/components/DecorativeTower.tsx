@@ -12,6 +12,13 @@ type Props = {
   shape?: "rect" | "taper" | "wedge";
 };
 
+type WindowBlock = {
+  id: string;
+  x: number;
+  y: number;
+  lit: boolean;
+};
+
 export default function DecorativeTower({
   floors,
   rows,
@@ -22,54 +29,45 @@ export default function DecorativeTower({
   height,
   shape = "rect",
 }: Props) {
-  const [lights, setLights] = useState<boolean[][][]>(() =>
-    Array.from({ length: floors }, () =>
-      Array.from({ length: rows }, () =>
-        Array.from({ length: cols }, () => Math.random() < 0.5)
-      )
-    )
-  );
+  const [windows, setWindows] = useState<WindowBlock[][]>([]);
 
-  // Rebuild grid when props change
+  // Generate strict grid (no random spacing, just consistent lit/unlit)
   useEffect(() => {
-    const initGrid = Array.from({ length: floors }, () =>
-      Array.from({ length: rows }, () =>
-        Array.from({ length: cols }, () => false)
-      )
-    );
-    setLights(initGrid);
+    const newFloors: WindowBlock[][] = [];
+
+    for (let f = 0; f < floors; f++) {
+      const floorBlocks: WindowBlock[] = [];
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          floorBlocks.push({
+            id: `${f}-${y}-${x}`,
+            x,
+            y,
+            lit: Math.random() < 0.15, // random lighting, but not layout
+          });
+        }
+      }
+
+      newFloors.push(floorBlocks);
+    }
+
+    setWindows(newFloors);
   }, [floors, rows, cols]);
 
-  // Flickering effect
+  // Flicker effect
   useEffect(() => {
     const interval = setInterval(() => {
-      setLights((prev) => {
-        if (!prev.length) return prev;
-
-        const newGrid = prev.map((f) => f.map((r) => [...r]));
-
-        const randFloor = Math.floor(Math.random() * floors);
-        const randRow = Math.floor(Math.random() * rows);
-        const randCol = Math.floor(Math.random() * cols);
-
-        // ✅ Safety check
-        if (
-          newGrid[randFloor] &&
-          newGrid[randFloor][randRow] &&
-          newGrid[randFloor][randRow][randCol] !== undefined
-        ) {
-          newGrid[randFloor][randRow][randCol] =
-            !newGrid[randFloor][randRow][randCol];
-        }
-
-        return newGrid;
-      });
-    }, 800);
-
+      setWindows((prev) =>
+        prev.map((floor) =>
+          floor.map((w) => (Math.random() < 0.05 ? { ...w, lit: !w.lit } : w))
+        )
+      );
+    }, 1200);
     return () => clearInterval(interval);
-  }, [floors, rows, cols]);
+  }, []);
 
-  // Colors
+  // Tower colors
   const bg =
     colorScheme === "brick"
       ? "#5a2a27"
@@ -90,46 +88,34 @@ export default function DecorativeTower({
         width,
         height,
         background: bg,
-        border: `8px solid ${border}`,
-        display: "flex",
-        flexDirection: "column-reverse",
+        border: `6px solid ${border}`,
         borderRadius:
           shape === "taper"
             ? "12px 12px 40px 40px"
             : shape === "wedge"
             ? "60px 12px 0 0"
-            : "12px",
+            : "8px",
         overflow: "hidden",
+        position: "relative",
       }}
     >
-      {lights.map((floor, f) => (
-        <div
-          key={f}
-          className="decor-floor"
-          style={{
-            flex: 1,
-            display: "grid",
-            gridTemplateColumns: `repeat(${cols}, 1fr)`,
-            gridTemplateRows: `repeat(${rows}, 1fr)`,
-            gap: "3px",
-            padding: "2px",
-          }}
-        >
-          {floor.map((row, i) =>
-            row.map((on, j) => (
-              <div
-                key={`${f}-${i}-${j}`}
-                className={`decor-window ${on ? "on" : ""}`}
-                style={{
-                  background: on ? "#ffe9a3" : "#111",
-                  borderRadius: "2px",
-                  transition: "background 0.4s ease",
-                }}
-              />
-            ))
-          )}
-        </div>
-      ))}
+      {windows.map((floor, fi) =>
+        floor.map((w) => (
+          <div
+            key={w.id}
+            style={{
+              position: "absolute",
+              left: `${(w.x / cols) * 100}%`,
+              bottom: `${((fi * rows + w.y) / (floors * rows)) * 100}%`,
+              width: `${100 / cols}%`,
+              height: `${100 / (floors * rows)}%`,
+              background: w.lit ? "#ffe9a3" : "#111",
+              borderRadius: "2px",
+              transition: "background 0.4s ease",
+            }}
+          />
+        ))
+      )}
     </div>
   );
 }

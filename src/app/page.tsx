@@ -4,8 +4,19 @@ import Elevator from "./components/Elevator";
 import FloorSelect from "./components/FloorSelect";
 import Sky from "./components/Sky";
 import DecorativeTower from "./components/DecorativeTower";
+import SkyscraperTower from "./components/SkyscraperTower";
 
 const FLOORS = 5;
+
+type SkyscraperConfig = {
+  rows: number;
+  cols: number;
+  width: number; // in vw units
+  height: number; // in vh units
+  color: string;
+  left: string;
+  zIndex: number;
+};
 
 type TowerConfig = {
   floors: number;
@@ -15,7 +26,7 @@ type TowerConfig = {
   height: string;
   colorScheme: "brick" | "glass" | "concrete";
   shape: "rect" | "taper" | "wedge";
-  left: string; // horizontal placement
+  left: string;
 };
 
 function randomTower(): TowerConfig {
@@ -32,31 +43,66 @@ function randomTower(): TowerConfig {
     height: `${random(30, 75)}vh`,
     colorScheme: schemes[random(0, schemes.length - 1)],
     shape: shapes[random(0, shapes.length - 1)],
-    left: `${random(0, 90)}vw`, // scatter horizontally
+    left: `${random(0, 90)}vw`,
   };
 }
 
 export default function Home() {
   const [current, setCurrent] = useState(0);
   const [doorsOpen, setDoorsOpen] = useState(true);
+  const [backSkyscrapers, setBackSkyscrapers] = useState<SkyscraperConfig[]>(
+    []
+  );
 
-  const [backTowers, setBackTowers] = useState<TowerConfig[]>([]);
+  const [backDecoratives, setBackDecoratives] = useState<TowerConfig[]>([]);
   const [frontTowers, setFrontTowers] = useState<TowerConfig[]>([]);
 
   // Generate skyline
   useEffect(() => {
-    const backs: TowerConfig[] = Array.from({ length: 20 }, (_, i) => {
-      const slotWidth = 100 / 20; // divide screen into 20 slots
-      const baseLeft = i * slotWidth;
-      const jitter = Math.random() * (slotWidth * 0.6); // random offset within slot
-      return {
-        ...randomTower(),
-        left: `${baseLeft + jitter}vw`, // distributed but still random
-      };
-    });
+    // 🎯 Generate 5 skyscraper towers
+    const skyscraperCount = 5;
+    const skyscrapers: SkyscraperConfig[] = Array.from(
+      { length: skyscraperCount },
+      (_, i) => {
+        const slotWidth = 100 / skyscraperCount;
+        const baseLeft = i * slotWidth + slotWidth / 4; // center in slot
+        const jitter = Math.random() * (slotWidth / 2); // wiggle inside slot
+
+        return {
+          rows: 18 + Math.floor(Math.random() * 5),
+          cols: 6 + Math.floor(Math.random() * 3),
+          width: 4 + Math.random() * 2,
+          height: 100 + Math.random() * 20,
+          color: "#2a2d34",
+          left: `${Math.min(baseLeft + jitter, 95)}vw`, // clamp to 95vw max
+          zIndex: 0,
+        };
+      }
+    );
+
+    // 🎯 Generate 10 decorative towers
+    const decorativeCount = 10;
+    const decoratives: TowerConfig[] = Array.from(
+      { length: decorativeCount },
+      (_, i) => {
+        const baseTower = randomTower();
+        const slotWidth = 100 / decorativeCount;
+        const baseLeft = i * slotWidth + slotWidth / 4;
+        const jitter = Math.random() * (slotWidth / 2);
+
+        return {
+          ...baseTower,
+          rows: baseTower.rows * 2,
+          cols: baseTower.cols * 2,
+          left: `${Math.min(baseLeft + jitter, 95)}vw`,
+        };
+      }
+    );
 
     const fronts = Array.from({ length: 4 }, randomTower);
-    setBackTowers(backs);
+
+    setBackSkyscrapers(skyscrapers);
+    setBackDecoratives(decoratives);
     setFrontTowers(fronts);
   }, []);
 
@@ -101,18 +147,33 @@ export default function Home() {
       <div
         style={{
           position: "absolute",
-          bottom: 80,
+          bottom: 50,
           left: 0,
-          width: "90vw", // <-- span full screen
-          height: "100%", // (optional, but keeps alignment predictable)
+          width: "100vw",
+          height: "100%",
           zIndex: 0,
-          opacity: 0.4,
+          opacity: 0.7,
           transform: "scale(0.7)",
           transformOrigin: "bottom center",
           filter: "blur(1px)",
         }}
       >
-        {backTowers.map((tower, i) => (
+        {/* Skyscraper towers */}
+        {backSkyscrapers.map((tower, i) => (
+          <div
+            key={`sky-${i}`}
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: tower.left,
+            }}
+          >
+            <SkyscraperTower {...tower} />
+          </div>
+        ))}
+
+        {/* Decorative towers */}
+        {backDecoratives.map((tower, i) => (
           <div
             key={`back-${i}`}
             style={{
