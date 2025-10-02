@@ -50,7 +50,9 @@ export default function SkyscraperTower({
         gridTemplateRows: `repeat(${rows}, 1fr)`,
         gridTemplateColumns: `repeat(${cols}, 1fr)`,
         border: "1px solid rgba(0,0,0,0.4)",
+        padding: "7px",
         zIndex,
+        boxSizing: "border-box", // ✅ prevents width overflow
       }}
     >
       {lights.map((row, rowIndex) =>
@@ -59,7 +61,7 @@ export default function SkyscraperTower({
             key={`${rowIndex}-${colIndex}`}
             style={{
               backgroundColor: lit ? "#ffd27f" : "#222",
-              margin: "1px",
+              margin: "2px",
               borderRadius: "1px",
             }}
           />

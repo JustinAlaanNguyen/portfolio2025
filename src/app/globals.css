@@ -17,16 +17,14 @@ body {
 #canvas {
   min-height: 100vh;
   width: 100vw;
-  /* ❌ remove this line
-  background-image: url("http://www.pictures-croatia.com/primosten/primosten-2m6e.jpg");
-  */
   background-size: cover;
   background-position: center;
   display: flex;
+  flex-direction: column;
   align-items: flex-end;
   justify-content: center;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 /* Description box */
@@ -53,6 +51,7 @@ body {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
   border-radius: 8px;
   text-align: center;
+  z-index: 3;
 }
 #floorSelect h4 {
   margin-bottom: 8px;
@@ -220,25 +219,75 @@ body {
   width: 100%;
   height: 100%;
   background: #ccc;
-  background-image: url("http://www.riversideelevators.com/img/elevator_inside.jpg");
-  background-size: cover;
-  display: flex;
   box-shadow: 0 -10px 0 #333;
-  overflow: hidden; /* ⬅️ keeps doors inside cab */
+  position: relative;
+  overflow: hidden; /* Ensures doors fully disappear */
+  padding-top: 25px; /* keep the top padding only */
+  padding-left: 15px;
+  padding-right: 15px;
+  display: flex;
+  justify-content: center; /* centers inner wrapper */
 }
 
-/* Doors */
+/* Base door styling */
 .door {
   width: 50%;
   height: 100%;
   transition: transform 300ms ease-in-out;
+  position: relative;
+  image-rendering: pixelated;
 }
+
+.door-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden; /* hides doors when they slide away */
+  display: flex;
+}
+
+/* Left door */
 .door.left {
-  background: #aaa;
+  background: linear-gradient(
+    to bottom,
+    #d8d8d8 0%,
+    #cfcfcf 35%,
+    #bfbfbf 70%,
+    #b5b5b5 100%
+  );
+  border-right: 1px solid #777;
+  box-shadow: inset 4px 0 0 rgba(0, 0, 0, 0.1),
+    /* left rim shading */ inset 0 0 0 1px #888; /* outer edge */
 }
+
+/* Right door */
 .door.right {
-  background: #999;
+  background: linear-gradient(
+    to bottom,
+    #d0d0d0 0%,
+    #c7c7c7 35%,
+    #b8b8b8 70%,
+    #aeaeae 100%
+  );
+  border-left: 1px solid #777;
+  box-shadow: inset -4px 0 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px #888;
 }
+
+/* Center seam highlight */
+.door::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  left: 100%; /* will align based on door side */
+  background: rgba(255, 255, 255, 0.15);
+}
+.door.right::after {
+  left: -2px;
+}
+
+/* Sliding animations (keep your existing behavior) */
 .door.left.open {
   transform: translateX(-100%);
 }
@@ -261,16 +310,16 @@ body {
   }
 }
 
-/* Street container */
 .street {
-  position: absolute;
-  bottom: 0;
+  position: relative; /* or remove position entirely */
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  z-index: 0; /* behind building */
-  height: 5%;
+  height: 50px; /* replace % with fixed px for consistency */
+  z-index: 0;
+  margin-top: 0;
+  overflow: visible;
 }
 
 /* Sidewalks */
@@ -292,7 +341,7 @@ body {
   background: #222;
   height: 120px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Lane markings */
@@ -572,6 +621,7 @@ body {
   transition: all 10s linear;
 }
 
+/* Star base */
 .star {
   position: absolute;
   border-radius: 50%;
@@ -579,46 +629,42 @@ body {
   opacity: 0.8;
 }
 
+/* Sizes */
+.star-0 {
+  width: 0.5px;
+  height: 0.5px;
+}
+.star-1 {
+  width: 1px;
+  height: 1px;
+}
+.star-2 {
+  width: 1.5px;
+  height: 1.5px;
+}
+.star-3 {
+  width: 2px;
+  height: 2px;
+}
+.star-4 {
+  width: 2.5px;
+  height: 2.5px;
+  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.5);
+}
+.star-5 {
+  width: 2.5px;
+  height: 2.5px;
+  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7);
+}
+
+/* Blinking */
 .blink {
   animation: blink ease-in-out infinite;
 }
-
 @keyframes blink {
   50% {
     opacity: 0;
   }
-}
-
-.star-0 {
-  height: 0.5px;
-  width: 0.5px;
-}
-
-.star-1 {
-  height: 1px;
-  width: 1px;
-}
-
-.star-2 {
-  height: 1.5px;
-  width: 1.5px;
-}
-
-.star-3 {
-  height: 2px;
-  width: 2px;
-}
-
-.star-4 {
-  height: 2.5px;
-  width: 2.5px;
-  box-shadow: 0px 0px 6px 1px rgba(255, 255, 255, 0.5);
-}
-
-.star-5 {
-  height: 2.5px;
-  width: 2.5px;
-  box-shadow: 0px 0px 6px 1px rgba(255, 255, 255, 0.7);
 }
 
 .stars-cross {
@@ -658,7 +704,7 @@ body {
   justify-content: center;
   gap: 5vw;
   position: relative;
-  margin-bottom: 4%;
+  margin-bottom: 0;
 }
 
 .decor-tower {
@@ -677,4 +723,357 @@ body {
 
 .decor-window.on {
   background: #ffd966 !important;
+}
+
+/* ========================= */
+/* Elevator Arrow Indicator  */
+/* ========================= */
+.elevator-indicator {
+  width: 4px;
+  height: 4px;
+  position: absolute;
+  top: 4px; /* slight spacing tweak */
+  left: 20%;
+  transform: translateX(-50%);
+  image-rendering: pixelated;
+  z-index: 5;
+}
+
+/* Animated pixel arrow (UP) */
+.elevator-indicator.up {
+  animation: arrowUp 0.5s steps(2) infinite;
+}
+
+/* Animated pixel arrow (DOWN) */
+.elevator-indicator.down {
+  animation: arrowDown 0.5s steps(2) infinite;
+}
+@keyframes arrowUp {
+  0%,
+  100% {
+    box-shadow: 8px 0px #ffd400, 6px 2px #ffd400, 10px 2px #ffd400,
+      4px 4px #ffd400, 8px 4px #ffd400, 12px 4px #ffd400;
+  }
+  50% {
+    box-shadow: 8px -2px #ffd400, 6px 0px #ffd400, 10px 0px #ffd400,
+      4px 2px #ffd400, 8px 2px #ffd400, 12px 2px #ffd400;
+  }
+}
+
+@keyframes arrowDown {
+  0%,
+  100% {
+    box-shadow: 4px 0px #ffd400, 8px 0px #ffd400, 12px 0px #ffd400,
+      6px 2px #ffd400, 10px 2px #ffd400, 8px 4px #ffd400;
+  }
+  50% {
+    box-shadow: 4px 2px #ffd400, 8px 2px #ffd400, 12px 2px #ffd400,
+      6px 4px #ffd400, 10px 4px #ffd400, 8px 6px #ffd400;
+  }
+}
+
+.elevator-indicator-box {
+  position: absolute;
+  top: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 18px;
+  background: #222; /* dark panel */
+  border: 2px solid #555; /* frame */
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+}
+
+/* ========================= */
+/*   STREET LIGHTS + GLOW    */
+/* ========================= */
+/* MINI STREET LIGHTS */
+.street-lights {
+  position: absolute;
+  top: -1px; /* Lower so nothing gets cut off */
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  pointer-events: none;
+  z-index: 3;
+  overflow: visible;
+}
+
+.street-light {
+  position: relative;
+  width: 4px; /* thinner pole */
+  height: 25px; /* shorter pole */
+  background: #555;
+  border-radius: 2px;
+}
+
+.street-light::after {
+  /* Lamp head */
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 6px;
+  background: #777;
+  border-radius: 2px 2px 4px 4px;
+}
+
+.street-light .light-glow {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(
+    circle,
+    #ffd77a 0%,
+    rgba(255, 215, 122, 0.05) 70%
+  );
+  border-radius: 50%;
+  box-shadow: 0px 0px 6px 3px rgba(255, 215, 122, 0.4),
+    0px 0px 15px 6px rgba(255, 215, 122, 0.2);
+  animation: glow-pulse-mini 2s infinite ease-in-out;
+}
+
+@keyframes glow-pulse-mini {
+  0%,
+  100% {
+    box-shadow: 0px 0px 6px 3px rgba(255, 215, 122, 0.4),
+      0px 0px 15px 6px rgba(255, 215, 122, 0.2);
+  }
+  50% {
+    box-shadow: 0px 0px 8px 4px rgba(255, 215, 122, 0.6),
+      0px 0px 20px 8px rgba(255, 215, 122, 0.3);
+  }
+}
+
+/* Keep b5 CSS in sync with these vars */
+:root {
+  --b5w: 10vw; /* matches .floor.b5 width */
+  --b5h: 20vh; /* matches .floor.b5 height */
+}
+
+/* The wrapper that positions the spire above the top floor */
+.top-with-spire {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Absolute positioning: sits just above b5 */
+.beacon-wrap {
+  position: absolute;
+  bottom: calc(100% + 1.5vh); /* little gap above roofline */
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--b5w);
+  height: calc(1.75 * var(--b5h)); /* 1.5–2× b5; picked 1.75× */
+  display: grid;
+  place-items: end center;
+  perspective: 700px; /* enable 3D */
+  z-index: 5;
+}
+
+/* The central mast */
+.spire {
+  width: max(3px, 0.18vw);
+  height: 100%;
+  background: linear-gradient(to bottom, #8bd1ff 0%, #3b4b69 50%, #121621 100%);
+  box-shadow: 0 0 8px rgba(139, 209, 255, 0.6),
+    0 0 20px rgba(139, 209, 255, 0.25);
+  border-radius: 999px;
+  position: relative;
+}
+
+/* little beacon “cap” at top with glow */
+.beacon-cap {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: clamp(14px, 1.2vw, 24px);
+  height: clamp(14px, 1.2vw, 24px);
+  transform: translate(-50%, -60%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, #aaf 0%, #4ad 50%, #246 100%);
+  box-shadow: 0 0 10px rgba(120, 200, 255, 0.8),
+    0 0 30px rgba(120, 200, 255, 0.5);
+}
+
+.cap-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(120, 200, 255, 0.45) 0%,
+    rgba(120, 200, 255, 0.18) 40%,
+    rgba(120, 200, 255, 0) 70%
+  );
+  filter: blur(2px);
+  animation: beacon-pulse 3.2s ease-in-out infinite;
+}
+
+@keyframes beacon-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+/* 3D text ring */
+.text-ring {
+  --radius: calc(var(--b5w) * 0.8); /* ring radius relative to tower top */
+  --lift: calc(var(--b5h) * -0.15); /* nudge ring up toward the cap */
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate3d(-50%, var(--lift), 0);
+  transform-style: preserve-3d;
+  animation: ring-spin 8s linear infinite;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Single wrap: N characters spaced evenly over 360° */
+.text-seg {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform-style: preserve-3d;
+  font-weight: 800;
+  font-size: clamp(10px, 1.15vw, 20px);
+  letter-spacing: normal;
+  /* place each char around the cylinder */
+  transform: rotateY(calc(var(--i) * (360deg / var(--n))))
+    translateZ(var(--radius)) rotateY(90deg) /* face outward */
+    translateY(calc(var(--b5h) * -0.02)); /* micro vertical align */
+
+  color: #9af7ff;
+  text-shadow: 0 0 6px rgba(86, 238, 255, 0.9), 0 0 14px rgba(86, 238, 255, 0.7),
+    0 0 28px rgba(138, 70, 255, 0.55), 0 0 42px rgba(138, 70, 255, 0.35);
+  filter: saturate(1.2);
+}
+
+/* smooth orbit */
+@keyframes ring-spin {
+  from {
+    transform: translate3d(-50%, var(--lift), 0) rotateY(0deg);
+  }
+  to {
+    transform: translate3d(-50%, var(--lift), 0) rotateY(360deg);
+  }
+}
+
+/* Optional: slight parallax on hover (desktop nicety) */
+@media (hover: hover) and (pointer: fine) {
+  .beacon-wrap:hover .text-ring {
+    animation-duration: 9s;
+  }
+}
+/* ========= TOWER TOP + SPIRE CONTAINER ========== */
+.top-with-spire {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ========= SPIRE + CAP ========== */
+.beacon-wrap {
+  top: 60px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-style: preserve-3d;
+  margin-top: 20vh; /* Pulls spire closer to tower */
+}
+
+.spire {
+  width: 0.5vw;
+  height: 25vh; /* ~1.75× b5 height */
+  background: #444;
+  border-radius: 3px;
+  position: relative;
+  z-index: 2;
+}
+
+.beacon-cap {
+  width: 1.2vw;
+  height: 1.2vw;
+  background: #888;
+  border-radius: 50%;
+  position: absolute;
+  top: -0.8vw;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+}
+
+.cap-glow {
+  position: absolute;
+  top: -1.2vw;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3.5vw;
+  height: 3.5vw;
+  border-radius: 50%;
+  background: radial-gradient(rgba(0, 255, 200, 0.35), rgba(0, 255, 200, 0));
+  animation: beacon-pulse 2.4s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.text-seg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-style: preserve-3d;
+  font-size: 2rem;
+  font-weight: bold;
+  white-space: nowrap;
+  color: #58fff4;
+  text-shadow: 0 0 12px rgba(88, 255, 244, 0.8),
+    0 0 22px rgba(88, 255, 244, 0.6);
+  pointer-events: none;
+}
+
+/* ========= ANIMATIONS ========== */
+@keyframes ring-spin {
+  100% {
+    transform: rotateY(0deg) translateX(-50%);
+  }
+  0% {
+    transform: rotateY(360deg) translateX(-50%);
+  }
+}
+
+@keyframes beacon-pulse {
+  0% {
+    opacity: 0.4;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.15);
+  }
+  100% {
+    opacity: 0.4;
+    transform: translateX(-50%) scale(1);
+  }
 }

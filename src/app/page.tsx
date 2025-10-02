@@ -59,26 +59,19 @@ export default function Home() {
 
   // Generate skyline
   useEffect(() => {
-    // 🎯 Generate 5 skyscraper towers
-    const skyscraperCount = 5;
-    const skyscrapers: SkyscraperConfig[] = Array.from(
-      { length: skyscraperCount },
-      (_, i) => {
-        const slotWidth = 100 / skyscraperCount;
-        const baseLeft = i * slotWidth + slotWidth / 4; // center in slot
-        const jitter = Math.random() * (slotWidth / 2); // wiggle inside slot
-
-        return {
-          rows: 18 + Math.floor(Math.random() * 5),
-          cols: 6 + Math.floor(Math.random() * 3),
-          width: 4 + Math.random() * 2,
-          height: 100 + Math.random() * 20,
-          color: "#2a2d34",
-          left: `${Math.min(baseLeft + jitter, 95)}vw`, // clamp to 95vw max
-          zIndex: 0,
-        };
-      }
-    );
+    // 🎯 Generate 5 skyscraper towers at fixed positions
+    const skyscrapers: SkyscraperConfig[] = [
+      { left: "5vw", width: 12, height: 110 },
+      { left: "15vw", width: 12, height: 115 },
+      { left: "40vw", width: 12, height: 108 },
+      { left: "42vw", width: 12, height: 120 },
+    ].map((tower) => ({
+      rows: 18 + Math.floor(Math.random() * 5),
+      cols: 6 + Math.floor(Math.random() * 3),
+      color: "#2a2d34",
+      zIndex: 0,
+      ...tower,
+    }));
 
     // 🎯 Generate 10 decorative towers
     const decorativeCount = 10;
@@ -90,11 +83,14 @@ export default function Home() {
         const baseLeft = i * slotWidth + slotWidth / 4;
         const jitter = Math.random() * (slotWidth / 2);
 
+        const towerWidth = parseFloat(baseTower.width); // ✅ Get width number
+        const maxLeft = 100 - towerWidth; // ✅ Prevent overflow
+
         return {
           ...baseTower,
           rows: baseTower.rows * 2,
           cols: baseTower.cols * 2,
-          left: `${Math.min(baseLeft + jitter, 95)}vw`,
+          left: `${Math.min(baseLeft + jitter, maxLeft)}vw`, // ✅ FIXED
         };
       }
     );
@@ -134,15 +130,6 @@ export default function Home() {
     <div id="canvas">
       <Sky />
       <FloorSelect current={current} onSelect={moveToFloor} />
-
-      <div className="street">
-        <div className="sidewalk top"></div>
-        <div className="road">
-          <div className="lane-markings"></div>
-        </div>
-        <div className="sidewalk bottom"></div>
-      </div>
-
       {/* BACKGROUND towers */}
       <div
         style={{
@@ -190,7 +177,7 @@ export default function Home() {
       {/* FOREGROUND towers */}
       <div
         className="city-row"
-        style={{ position: "relative", bottom: 0, zIndex: 1 }}
+        style={{ position: "relative", bottom: 0, zIndex: 1, marginBottom: 0 }}
       >
         {frontTowers.map((tower, i) =>
           i === 1 ? (
@@ -207,6 +194,29 @@ export default function Home() {
             <DecorativeTower key={`front-${i}`} {...tower} />
           )
         )}
+      </div>
+      <div className="street">
+        <div className="sidewalk top"></div>
+        <div className="road">
+          {/* ✅ Add this block */}
+          <div className="street-lights">
+            <div className="street-light">
+              <div className="light-glow"></div>
+            </div>
+            <div className="street-light">
+              <div className="light-glow"></div>
+            </div>
+            <div className="street-light">
+              <div className="light-glow"></div>
+            </div>
+            <div className="street-light">
+              <div className="light-glow"></div>
+            </div>
+          </div>
+
+          <div className="lane-markings"></div>
+        </div>
+        <div className="sidewalk bottom"></div>
       </div>
     </div>
   );

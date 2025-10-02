@@ -13,44 +13,70 @@ export default function Sky() {
     }
 
     if (starsContainer) {
-      for (let i = 0; i < 400; i++) {
+      const addStar = (
+        cls: string,
+        topRange: [number, number],
+        duration: [number, number],
+        extra?: (el: HTMLDivElement) => void
+      ) => {
         const star = document.createElement("div");
-        star.className = `star star-${Math.floor(Math.random() * 5)}`;
-        star.style.top = `${getRandomInt(0, 100)}vh`;
+        star.className = cls;
+        star.style.top = `${getRandomInt(topRange[0], topRange[1])}vh`;
         star.style.left = `${getRandomInt(0, 100)}vw`;
-        star.style.animationDuration = `${getRandomInt(2, 6)}s`;
-        if (star.className.includes("star-5")) {
-          const color = nightsky[Math.floor(Math.random() * nightsky.length)];
-          star.style.backgroundColor = color;
-          star.style.boxShadow = `0px 0px 6px 1px ${color}`;
-        }
+        star.style.animationDuration = `${getRandomInt(
+          duration[0],
+          duration[1]
+        )}s`;
+        if (extra) extra(star);
         starsContainer.appendChild(star);
-      }
-    }
+      };
 
-    if (cross) {
+      for (let i = 0; i < 500; i++) {
+        addStar("star star-1 blink", [0, 40], [2, 5]);
+        addStar("star star-2 blink", [20, 70], [4, 8]);
+      }
+
+      for (let i = 0; i < 150; i++) {
+        addStar("star star-0", [0, 50], [1, 2.5]);
+        addStar("star star-1 blink", [0, 50], [2.5, 4]);
+        addStar("star star-2 blink", [0, 50], [4, 5]);
+      }
+
       for (let i = 0; i < 100; i++) {
-        const blur = document.createElement("div");
-        blur.className = "blur";
-        blur.style.top = `${getRandomInt(0, 100)}%`;
-        blur.style.left = `${getRandomInt(0, 100)}%`;
-        blur.style.backgroundColor =
-          nightsky[Math.floor(Math.random() * nightsky.length)];
-        cross.appendChild(blur);
+        addStar("star star-0", [40, 75], [1, 3]);
+        addStar("star star-1 blink", [40, 75], [2, 4]);
+      }
+
+      for (let i = 0; i < 250; i++) {
+        addStar("star star-0", [0, 100], [1, 2]);
+        addStar("star star-1 blink", [0, 100], [2, 5]);
+        addStar("star star-2", [0, 100], [1, 4]);
+        addStar("star star-4 blink", [0, 70], [5, 7]);
+      }
+
+      for (let i = 0; i < 50; i++) {
+        addStar("star star-5 blink", [0, 50], [5, 7], (el) => {
+          const color = nightsky[Math.floor(Math.random() * nightsky.length)];
+          el.style.backgroundColor = color;
+          el.style.boxShadow = `0px 0px 6px 1px ${color}`;
+        });
       }
     }
 
-    if (crossAux) {
-      for (let i = 0; i < 80; i++) {
+    const addBlur = (container: Element, count: number) => {
+      for (let i = 0; i < count; i++) {
         const blur = document.createElement("div");
         blur.className = "blur";
         blur.style.top = `${getRandomInt(0, 100)}%`;
         blur.style.left = `${getRandomInt(0, 100)}%`;
         blur.style.backgroundColor =
           nightsky[Math.floor(Math.random() * nightsky.length)];
-        crossAux.appendChild(blur);
+        container.appendChild(blur);
       }
-    }
+    };
+
+    if (cross) addBlur(cross, 150);
+    if (crossAux) addBlur(crossAux, 120);
   }, []);
 
   return (

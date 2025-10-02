@@ -80,7 +80,6 @@ export default function DecorativeTower({
       : colorScheme === "glass"
       ? "#0a1c2b"
       : "#222";
-
   return (
     <div
       className={`decor-tower ${className ?? ""}`}
@@ -97,25 +96,44 @@ export default function DecorativeTower({
             : "8px",
         overflow: "hidden",
         position: "relative",
+        display: "flex",
+        flexDirection: "column-reverse",
       }}
     >
-      {windows.map((floor, fi) =>
-        floor.map((w) => (
-          <div
-            key={w.id}
-            style={{
-              position: "absolute",
-              left: `${(w.x / cols) * 100}%`,
-              bottom: `${((fi * rows + w.y) / (floors * rows)) * 100}%`,
-              width: `${100 / cols}%`,
-              height: `${100 / (floors * rows)}%`,
-              background: w.lit ? "#ffe9a3" : "#111",
-              borderRadius: "2px",
-              transition: "background 0.4s ease",
-            }}
-          />
-        ))
-      )}
+      {windows.map((floor, fi) => (
+        <div
+          key={fi}
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+            gridTemplateRows: `repeat(${rows}, 1fr)`,
+            gap: "6px", // bigger spacing between windows
+            flex: "1",
+            padding: "7px", // ✅ space between windows and building edges
+          }}
+        >
+          {floor.map((w) => (
+            <div
+              key={w.id}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "85%", // ✅ shrink window
+                  height: "70%",
+                  background: w.lit ? "#ffe9a3" : "#111",
+                  borderRadius: "3px",
+                  transition: "background 0.4s ease",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
