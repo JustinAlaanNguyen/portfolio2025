@@ -27,6 +27,12 @@ body {
   overflow: hidden;
 }
 
+@font-face {
+  font-family: "Liberty";
+  src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/907368/liberty.otf');
+}
+
+
 /* Description box */
 .description {
   position: absolute;
@@ -40,51 +46,82 @@ body {
   font-size: 14px;
 }
 
-/* Floor selector */
+/* Control Panel */
 #floorSelect {
-  position: absolute;
+  position: fixed;
   right: 7%;
   top: 18%;
-  width: 120px;
-  background: #fff;
-  padding: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  border-radius: 8px;
+  width: 180px;
+  background: rgba(15, 15, 25, 0.95);
+  padding: 16px;
+  border-radius: 12px;
   text-align: center;
   z-index: 3;
+
+  border: 2px solid rgba(0, 255, 255, 0.6);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.4), inset 0 0 8px rgba(0, 255, 255, 0.2);
+  font-family: "Orbitron", sans-serif;
+  color: #d9fdff;
 }
+
 #floorSelect h4 {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   font-size: 14px;
+  color: #00f0ff;
+  text-shadow: 0 0 8px #00f0ff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
-#floorSelect ul {
+
+/* Floor Buttons */
+.floor-buttons {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
+  margin-bottom: 12px;
+  padding: 0;
 }
-#floorSelect li {
+
+.floor-buttons li {
   width: 48px;
   height: 48px;
   line-height: 48px;
   text-align: center;
   border-radius: 50%;
-  border: 2px solid #ddd;
+  border: 2px solid rgba(0, 255, 255, 0.5);
   cursor: pointer;
   user-select: none;
-  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
-  background: #fff;
+  background: #0a0a12;
+  color: #00f0ff;
+  font-weight: bold;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-#floorSelect li:hover {
-  transform: translateY(-4px);
-  background: #656565;
-  color: #fff;
+
+.floor-buttons li:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 12px #00f0ff, inset 0 0 6px #00f0ff;
+  background: #101020;
 }
-#floorSelect li.active {
-  background: #333;
-  color: #fff;
-  border-color: #222;
+
+.floor-buttons li.active {
+  background: #00f0ff;
+  color: #111;
+  box-shadow: 0 0 15px #00f0ff, 0 0 25px #00f0ff;
+}
+
+/* Legend */
+.legend {
+  margin-top: 10px;
+  text-align: left;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.legend strong {
+  color: #00f0ff;
+  text-shadow: 0 0 6px #00f0ff;
 }
 
 /* Tower container (floors stacked vertically) */
@@ -94,7 +131,10 @@ body {
   align-items: center;
   position: relative;
   margin-bottom: 0;
+  padding-top: 60vh;
+  overflow: visible;
 }
+
 /* Tower container */
 .b {
   position: relative;
@@ -149,6 +189,236 @@ body {
   height: 20vh;
 }
 
+.top-floor-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.antenna {
+  position: absolute;
+  top: -30vh; /* raise antenna above the top floor */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 30vh; /* matches perspective of tower height */
+  background: #666;
+  border-radius: 2px;
+}
+
+/* Beacon light on top of antenna */
+.antenna::after {
+  content: "";
+  position: absolute;
+  top: -10px;   /* sits just above antenna */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  background: red;          /* make it a red beacon */
+  border-radius: 50%;
+  box-shadow: 0 0 6px red;
+
+  animation: pulse 1.5s infinite ease-in-out; /* pulsing effect */
+}
+
+/* Position the text over the antenna */
+.neon-sign {
+  position: absolute;
+  top: -17vh;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0;
+}
+
+.text {
+  font-family: "Liberty";
+  font-weight: 100;
+  font-size: 4rem;      /* match the demo */
+  letter-spacing: -0.15em;
+  display: flex;
+   display: block;   /* ✅ let the lines size themselves */
+  text-align: center;      /* side by side like original */
+  line-height: 1; /* ✅ keeps lines snug */
+}
+
+.letter {
+  color: #d9fdff;
+  text-shadow: 0 0 2rem #00f0ff;
+  display: inline-block;
+}
+
+/* Flicker only on specific letter(s) */
+.letter.flicker {
+  transform: translate(-0.2rem, 1rem) rotate(10deg);
+  animation: flicker 2s ease-in-out infinite alternate;
+}
+
+/* Broken neon letter */
+.letter.broken {
+  display: inline-block;
+  transform-origin: top center;   /* pivot like it’s hanging */
+  animation: brokenFlicker 4s infinite;
+}
+
+/* Flicker + swing animation */
+@keyframes brokenFlicker {
+  0% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(12deg);
+    text-shadow: 0 0 2rem #00f0ff;
+  }
+  5% {
+    opacity: 0.6;
+    transform: translate(-0.25rem, 1.1rem) rotate(14deg);
+    text-shadow: 0 0 1rem #00f0ff;
+  }
+  7% {
+    opacity: 0;
+    transform: translate(-0.2rem, 1.2rem) rotate(12deg);
+    text-shadow: none;
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(11deg);
+    text-shadow: 0 0 2rem #00f0ff;
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-0.3rem, 1.1rem) rotate(13deg);
+    text-shadow: 0 0 2.5rem #00f0ff;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(12deg);
+    text-shadow: 0 0 2rem #00f0ff;
+  }
+}
+
+
+.line {
+  display: inline-flex;   /* lets letters stay on one row */
+  white-space: nowrap;    /* prevents wrapping */
+}
+
+.word {
+  display: inline-flex;
+  margin-right: 2rem;  /* controls spacing between words */
+}
+
+.word:last-child {
+  margin-right: 0; /* no extra gap at the end */
+}
+
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+    box-shadow: 0 0 6px red;
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 15px 6px red;
+  }
+}
+
+
+@keyframes flicker {
+  0% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(10deg);
+  }
+  5% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(10deg);
+  }
+  5.5% {
+    opacity: 0;
+    transform: translate(-0.2rem, 1rem) rotate(10deg);
+  }
+  6% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(10deg);
+  }
+  6.5% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(10deg);
+  }
+  7% {
+    opacity: 0;
+    transform: translate(-0.2rem, 1rem) rotate(10deg);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(10deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(13deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-0.2rem, 1rem) rotate(10deg);
+  }
+}
+.cage {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Metal grid background */
+  background-image:
+    linear-gradient(to right, rgba(150,150,150,0.5) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(150,150,150,0.5) 2px, transparent 2px);
+  background-size: 20px 20px;
+  background-color: rgba(30,30,30,0.6);
+  border: 2px solid #666;
+  border-radius: 4px;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.8);
+  z-index: 1;
+
+  /* 🔑 let the cage wrap tightly around text */
+  line-height: 1;        /* shrink vertical line spacing */
+}
+
+/* Ensure letters glow in front */
+.cage .letter {
+  position: relative;
+  z-index: 2;
+}
+
+/* Add side support bars */
+.cage::before,
+.cage::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to bottom, #888, #444);
+}
+
+/* ✅ Extend the cage downwards */
+.cage.extend::after {
+  content: "";
+  position: absolute;
+  top: 100%;   /* start right below the cage */
+  left: 0;
+  width: 100%;
+  height: 3vh; /* how tall the extension should be */
+  
+  /* same grid as main cage */
+  background-image:
+    linear-gradient(to right, rgba(150,150,150,0.5) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(150,150,150,0.5) 2px, transparent 2px);
+  background-size: 20px 20px;
+  background-color: rgba(30,30,30,0.6);
+  border-left: 2px solid #666;
+  border-right: 2px solid #666;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.8);
+}
+
 /* Elevator shaft + cab */
 #elevatorShaft {
   background: #362e2b;
@@ -195,47 +465,35 @@ body {
   opacity: 1;
 }
 
-/* Shake/stretch animation */
-@keyframes travel-shake {
-  0%,
-  100% {
-    transform: translateX(-50%) scaleX(1) scaleY(1);
-  }
-  25% {
-    transform: translateX(-50%) scaleX(1.01) scaleY(0.99);
-  }
-  50% {
-    transform: translateX(-50%) scaleX(0.99) scaleY(1.01);
-  }
-  75% {
-    transform: translateX(-50%) scaleX(1.02) scaleY(0.98);
-  }
-}
 #elevatorContainer.moving {
-  animation: travel-shake 1s ease-in-out infinite;
+  /* animation: travel-shake 1s ease-in-out infinite; */
 }
 /* Elevator cab */
 #elevator {
   width: 100%;
   height: 100%;
-  background: #ccc;
-  box-shadow: 0 -10px 0 #333;
+  background: radial-gradient(circle at center, #111 40%, #000 100%);
+  border: 2px solid #0ff; /* glowing cyan frame */
+  box-shadow: 0 0 12px #0ff, 0 0 24px rgba(0, 255, 255, 0.6);
   position: relative;
-  overflow: hidden; /* Ensures doors fully disappear */
-  padding-top: 25px; /* keep the top padding only */
+  overflow: hidden;
+  padding-top: 25px;
   padding-left: 15px;
   padding-right: 15px;
   display: flex;
-  justify-content: center; /* centers inner wrapper */
+  justify-content: center;
 }
 
-/* Base door styling */
+/* Neon doors */
 .door {
   width: 50%;
   height: 100%;
   transition: transform 300ms ease-in-out;
   position: relative;
-  image-rendering: pixelated;
+  background: linear-gradient(to bottom, #111 0%, #1a1a1a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.3);
+  overflow: hidden;
 }
 
 .door-wrapper {
@@ -246,31 +504,17 @@ body {
   display: flex;
 }
 
-/* Left door */
-.door.left {
-  background: linear-gradient(
-    to bottom,
-    #d8d8d8 0%,
-    #cfcfcf 35%,
-    #bfbfbf 70%,
-    #b5b5b5 100%
-  );
-  border-right: 1px solid #777;
-  box-shadow: inset 4px 0 0 rgba(0, 0, 0, 0.1),
-    /* left rim shading */ inset 0 0 0 1px #888; /* outer edge */
-}
-
-/* Right door */
-.door.right {
-  background: linear-gradient(
-    to bottom,
-    #d0d0d0 0%,
-    #c7c7c7 35%,
-    #b8b8b8 70%,
-    #aeaeae 100%
-  );
-  border-left: 1px solid #777;
-  box-shadow: inset -4px 0 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px #888;
+/* Neon accent strip */
+.door::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(to bottom, #ff00ff, #00ffff);
+  box-shadow: 0 0 6px #0ff, 0 0 12px #f0f;
 }
 
 /* Center seam highlight */
@@ -283,17 +527,95 @@ body {
   left: 100%; /* will align based on door side */
   background: rgba(255, 255, 255, 0.15);
 }
-.door.right::after {
-  left: -2px;
+
+/* Left and right door tweaks */
+.door.left {
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+.door.right {
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Sliding animations (keep your existing behavior) */
+/* Sliding open effect (unchanged logic) */
 .door.left.open {
   transform: translateX(-100%);
 }
 .door.right.open {
   transform: translateX(100%);
 }
+
+/* Interior glow when doors open */
+#elevator.open-glow {
+  box-shadow: 0 0 20px #ff00ff, 0 0 40px #0ff;
+}
+
+
+
+/* ========================= */
+/* Elevator Arrow Indicator  */
+/* ========================= */
+.elevator-indicator-box {
+  position: absolute;
+  top: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 18px;
+  background: #0a0a0a; /* darker cyberpunk panel */
+  border: 2px solid #0ff;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px #0ff;
+  z-index: 4;
+}
+
+.elevator-indicator {
+  width: 6px;
+  height: 6px;
+  background: transparent; 
+  border-radius: 1px;
+}
+
+.elevator-indicator.up {
+  animation: arrowUpNeon 0.5s steps(2) infinite;
+}
+.elevator-indicator.down {
+  animation: arrowDownNeon 0.5s steps(2) infinite;
+  z-index: 5;
+}
+
+@keyframes arrowUpNeon {
+  0%, 100% {
+    box-shadow:
+      0 -2px #0ff,               /* tip */
+      -2px 0 #0ff, 
+      0 0 #f0f, 
+      2px 0 #0ff;  /* base row */
+  }
+  50% {
+    box-shadow:
+      0 -2px #f0f,
+      -2px 0 #f0f, 
+      0 0 #0ff,
+       2px 0 #f0f;
+  }
+}
+
+@keyframes arrowDownNeon {
+  0%, 100% {
+    box-shadow:
+      0 2px #0ff,               /* tip */
+      -2px 0 #0ff, 0 0 #f0f, 2px 0 #0ff;  /* base row */
+  }
+  50% {
+    box-shadow:
+      0 2px #f0f,
+      -2px 0 #f0f, 0 0 #0ff, 2px 0 #f0f;
+  }
+}
+
 
 /* Responsive */
 @media (max-width: 900px) {
@@ -726,69 +1048,6 @@ body {
 }
 
 /* ========================= */
-/* Elevator Arrow Indicator  */
-/* ========================= */
-.elevator-indicator {
-  width: 4px;
-  height: 4px;
-  position: absolute;
-  top: 4px; /* slight spacing tweak */
-  left: 20%;
-  transform: translateX(-50%);
-  image-rendering: pixelated;
-  z-index: 5;
-}
-
-/* Animated pixel arrow (UP) */
-.elevator-indicator.up {
-  animation: arrowUp 0.5s steps(2) infinite;
-}
-
-/* Animated pixel arrow (DOWN) */
-.elevator-indicator.down {
-  animation: arrowDown 0.5s steps(2) infinite;
-}
-@keyframes arrowUp {
-  0%,
-  100% {
-    box-shadow: 8px 0px #ffd400, 6px 2px #ffd400, 10px 2px #ffd400,
-      4px 4px #ffd400, 8px 4px #ffd400, 12px 4px #ffd400;
-  }
-  50% {
-    box-shadow: 8px -2px #ffd400, 6px 0px #ffd400, 10px 0px #ffd400,
-      4px 2px #ffd400, 8px 2px #ffd400, 12px 2px #ffd400;
-  }
-}
-
-@keyframes arrowDown {
-  0%,
-  100% {
-    box-shadow: 4px 0px #ffd400, 8px 0px #ffd400, 12px 0px #ffd400,
-      6px 2px #ffd400, 10px 2px #ffd400, 8px 4px #ffd400;
-  }
-  50% {
-    box-shadow: 4px 2px #ffd400, 8px 2px #ffd400, 12px 2px #ffd400,
-      6px 4px #ffd400, 10px 4px #ffd400, 8px 6px #ffd400;
-  }
-}
-
-.elevator-indicator-box {
-  position: absolute;
-  top: 0px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 18px;
-  background: #222; /* dark panel */
-  border: 2px solid #555; /* frame */
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 4;
-}
-
-/* ========================= */
 /*   STREET LIGHTS + GLOW    */
 /* ========================= */
 /* MINI STREET LIGHTS */
@@ -859,221 +1118,4 @@ body {
 :root {
   --b5w: 10vw; /* matches .floor.b5 width */
   --b5h: 20vh; /* matches .floor.b5 height */
-}
-
-/* The wrapper that positions the spire above the top floor */
-.top-with-spire {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Absolute positioning: sits just above b5 */
-.beacon-wrap {
-  position: absolute;
-  bottom: calc(100% + 1.5vh); /* little gap above roofline */
-  left: 50%;
-  transform: translateX(-50%);
-  width: var(--b5w);
-  height: calc(1.75 * var(--b5h)); /* 1.5–2× b5; picked 1.75× */
-  display: grid;
-  place-items: end center;
-  perspective: 700px; /* enable 3D */
-  z-index: 5;
-}
-
-/* The central mast */
-.spire {
-  width: max(3px, 0.18vw);
-  height: 100%;
-  background: linear-gradient(to bottom, #8bd1ff 0%, #3b4b69 50%, #121621 100%);
-  box-shadow: 0 0 8px rgba(139, 209, 255, 0.6),
-    0 0 20px rgba(139, 209, 255, 0.25);
-  border-radius: 999px;
-  position: relative;
-}
-
-/* little beacon “cap” at top with glow */
-.beacon-cap {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: clamp(14px, 1.2vw, 24px);
-  height: clamp(14px, 1.2vw, 24px);
-  transform: translate(-50%, -60%);
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 45%, #aaf 0%, #4ad 50%, #246 100%);
-  box-shadow: 0 0 10px rgba(120, 200, 255, 0.8),
-    0 0 30px rgba(120, 200, 255, 0.5);
-}
-
-.cap-glow {
-  position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(120, 200, 255, 0.45) 0%,
-    rgba(120, 200, 255, 0.18) 40%,
-    rgba(120, 200, 255, 0) 70%
-  );
-  filter: blur(2px);
-  animation: beacon-pulse 3.2s ease-in-out infinite;
-}
-
-@keyframes beacon-pulse {
-  0%,
-  100% {
-    opacity: 0.7;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.08);
-  }
-}
-
-/* 3D text ring */
-.text-ring {
-  --radius: calc(var(--b5w) * 0.8); /* ring radius relative to tower top */
-  --lift: calc(var(--b5h) * -0.15); /* nudge ring up toward the cap */
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translate3d(-50%, var(--lift), 0);
-  transform-style: preserve-3d;
-  animation: ring-spin 8s linear infinite;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-/* Single wrap: N characters spaced evenly over 360° */
-.text-seg {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform-style: preserve-3d;
-  font-weight: 800;
-  font-size: clamp(10px, 1.15vw, 20px);
-  letter-spacing: normal;
-  /* place each char around the cylinder */
-  transform: rotateY(calc(var(--i) * (360deg / var(--n))))
-    translateZ(var(--radius)) rotateY(90deg) /* face outward */
-    translateY(calc(var(--b5h) * -0.02)); /* micro vertical align */
-
-  color: #9af7ff;
-  text-shadow: 0 0 6px rgba(86, 238, 255, 0.9), 0 0 14px rgba(86, 238, 255, 0.7),
-    0 0 28px rgba(138, 70, 255, 0.55), 0 0 42px rgba(138, 70, 255, 0.35);
-  filter: saturate(1.2);
-}
-
-/* smooth orbit */
-@keyframes ring-spin {
-  from {
-    transform: translate3d(-50%, var(--lift), 0) rotateY(0deg);
-  }
-  to {
-    transform: translate3d(-50%, var(--lift), 0) rotateY(360deg);
-  }
-}
-
-/* Optional: slight parallax on hover (desktop nicety) */
-@media (hover: hover) and (pointer: fine) {
-  .beacon-wrap:hover .text-ring {
-    animation-duration: 9s;
-  }
-}
-/* ========= TOWER TOP + SPIRE CONTAINER ========== */
-.top-with-spire {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* ========= SPIRE + CAP ========== */
-.beacon-wrap {
-  top: 60px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform-style: preserve-3d;
-  margin-top: 20vh; /* Pulls spire closer to tower */
-}
-
-.spire {
-  width: 0.5vw;
-  height: 25vh; /* ~1.75× b5 height */
-  background: #444;
-  border-radius: 3px;
-  position: relative;
-  z-index: 2;
-}
-
-.beacon-cap {
-  width: 1.2vw;
-  height: 1.2vw;
-  background: #888;
-  border-radius: 50%;
-  position: absolute;
-  top: -0.8vw;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
-}
-
-.cap-glow {
-  position: absolute;
-  top: -1.2vw;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 3.5vw;
-  height: 3.5vw;
-  border-radius: 50%;
-  background: radial-gradient(rgba(0, 255, 200, 0.35), rgba(0, 255, 200, 0));
-  animation: beacon-pulse 2.4s infinite ease-in-out;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.text-seg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform-style: preserve-3d;
-  font-size: 2rem;
-  font-weight: bold;
-  white-space: nowrap;
-  color: #58fff4;
-  text-shadow: 0 0 12px rgba(88, 255, 244, 0.8),
-    0 0 22px rgba(88, 255, 244, 0.6);
-  pointer-events: none;
-}
-
-/* ========= ANIMATIONS ========== */
-@keyframes ring-spin {
-  100% {
-    transform: rotateY(0deg) translateX(-50%);
-  }
-  0% {
-    transform: rotateY(360deg) translateX(-50%);
-  }
-}
-
-@keyframes beacon-pulse {
-  0% {
-    opacity: 0.4;
-    transform: translateX(-50%) scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1.15);
-  }
-  100% {
-    opacity: 0.4;
-    transform: translateX(-50%) scale(1);
-  }
 }

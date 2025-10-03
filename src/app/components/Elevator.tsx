@@ -13,25 +13,31 @@ export default function Elevator({ current, doorsOpen }: Props) {
 
   // Floor sizes (must match CSS for b1–b4)
   const floorSizes = [
-    { width: "10vw", height: "20vh" }, // b1
-    { width: "10vw", height: "20vh" }, // b2
-    { width: "10vw", height: "20vh" }, // b3
-    { width: "10vw", height: "15vh" }, // b4
+    { width: "33vw", height: "50vh" }, // b1
+    { width: "26vw", height: "40vh" }, // b2
+    { width: "20vw", height: "30vh" }, // b3
+    { width: "15vw", height: "20vh" }, // b4
   ];
 
-  // Convert "20vh" -> 20 for math (just numbers)
+  const elevatorSizes = [
+    { width: "10vw", height: "15vh" }, // b1
+    { width: "10vw", height: "15vh" }, // b2
+    { width: "10vw", height: "15vh" }, // b3
+    { width: "10vw", height: "15vh" }, // b4
+  ];
+  // Convert "20vh" -> 20 for math
   const heights = floorSizes.map((f) => parseFloat(f.height));
 
-  // Build offsets from bottom (in vh units)
-  const floorOffsets = heights.map(
-    (_, i) => heights.slice(0, i + 1).reduce((a, b) => a + b, 0) // cumulative up to current floor
+  // Calculate the bottom positions of each floor relative to the tower bottom
+  const floorBottoms = heights.map((_, i) =>
+    heights.slice(0, i).reduce((a, b) => a + b, 0)
   );
 
   // Pick cab size based on target floor
-  const cabSize = floorSizes[current];
+  const cabSize = elevatorSizes[current];
 
-  // ✅ Cab bottom flush with *bottom* of target floor
-  const cabBottomVh = floorOffsets[current] - parseFloat(cabSize.height);
+  // ✅ Position elevator so its **bottom** sits on the floor's **bottom**
+  const cabBottomVh = floorBottoms[current];
 
   // Movement effect
   useEffect(() => {
@@ -44,47 +50,6 @@ export default function Elevator({ current, doorsOpen }: Props) {
       return () => clearTimeout(timer);
     }
   }, [current, prevFloor]);
-
-  function BeaconSpire() {
-    const text = "Now Viewing: Justin";
-    const chars = text.split("");
-
-    return (
-      <div className="beacon-wrap" style={{ pointerEvents: "none" }}>
-        {/* Tall mast */}
-        <div className="spire"></div>
-        {/* Beacon cap / glow */}
-        <div className="beacon-cap">
-          <div className="cap-glow"></div>
-        </div>
-
-        {/* 3D text ring */}
-        <div
-          className="text-ring"
-          style={
-            {
-              "--n": chars.length,
-            } as React.CSSProperties
-          }
-          aria-label={text}
-        >
-          {chars.map((ch, i) => (
-            <span
-              key={i}
-              className="text-seg"
-              style={
-                {
-                  ["--i" as string]: i,
-                } as React.CSSProperties
-              }
-            >
-              {ch === " " ? "\u00A0" : ch}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="tower">
@@ -103,11 +68,61 @@ export default function Elevator({ current, doorsOpen }: Props) {
         <Floor rows={10} cols={10} className="b1" />
         <Floor rows={8} cols={8} className="b2" />
         <Floor rows={5} cols={5} className="b3" />
-        <Floor rows={3} cols={3} className="b4" />
+        <div className="top-floor-wrapper">
+          <Floor rows={3} cols={3} className="b4" />
 
-        {/* Beacon / Spire on top */}
-        <div className="top-with-spire">
-          <BeaconSpire />
+          {/* Antenna pole */}
+          <div className="antenna"></div>
+
+          {/* Floating neon sign */}
+
+          <h1 className="text neon-sign">
+            <div className="line cage">
+              <span className="word">
+                <span className="letter">N</span>
+                <span className="letter">O</span>
+                <span className="letter">W</span>
+              </span>
+
+              <span className="word">
+                <span className="letter">V</span>
+                <span className="letter">I</span>
+                <span className="letter">E</span>
+                <span className="letter">W</span>
+                <span className="letter">I</span>
+                <span className="letter">N</span>
+                <span className="letter">G</span>
+              </span>
+
+              <span className="word">
+                <span className="letter">:</span>
+              </span>
+            </div>
+
+            <div className="line cage extend">
+              <span className="word">
+                <span className="letter">J</span>
+                <span className="letter">U</span>
+                <span className="letter">S</span>
+                <span className="letter">T</span>
+                <span className="letter">I</span>
+                <span className="letter">N</span>
+              </span>
+
+              <span className="letter">A</span>
+              <span className="letter">L</span>
+              <span className="letter">A</span>
+              <span className="letter">A</span>
+              <span className="letter">N</span>
+              <span className="letter">-</span>
+              <span className="letter">N</span>
+              <span className="letter">G</span>
+              <span className="letter">U</span>
+              <span className="letter">Y</span>
+              <span className="letter">E</span>
+              <span className="letter broken">N</span>
+            </div>
+          </h1>
         </div>
       </div>
 

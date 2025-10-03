@@ -139,7 +139,7 @@ export default function Home() {
           width: "100vw",
           height: "100%",
           zIndex: 0,
-          opacity: 0.7,
+          opacity: 0.6,
           transform: "scale(0.7)",
           transformOrigin: "bottom center",
           filter: "blur(1px)",
