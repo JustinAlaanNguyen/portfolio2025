@@ -5,6 +5,7 @@ import FloorSelect from "./components/FloorSelect";
 import Sky from "./components/Sky";
 import DecorativeTower from "./components/DecorativeTower";
 import SkyscraperTower from "./components/SkyscraperTower";
+import AboutMePage from "./AboutMePage";
 
 const FLOORS = 5;
 
@@ -56,6 +57,17 @@ export default function Home() {
 
   const [backDecoratives, setBackDecoratives] = useState<TowerConfig[]>([]);
   const [frontTowers, setFrontTowers] = useState<TowerConfig[]>([]);
+  const [showFloorPage, setShowFloorPage] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent<{ floor: number }>;
+      const floorNum = custom.detail?.floor ?? null;
+      setShowFloorPage(floorNum);
+    };
+    window.addEventListener("open-floor-page", handler);
+    return () => window.removeEventListener("open-floor-page", handler);
+  }, []);
 
   // Generate skyline
   useEffect(() => {
@@ -104,6 +116,16 @@ export default function Home() {
 
   const moveToFloor = (floor: number) => {
     if (floor === current || floor < 0 || floor >= FLOORS) return;
+
+    // Scroll to elevator smoothly
+    const el = document.getElementById("elevatorContainer");
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+
     const floorsToMove = Math.abs(floor - current);
     const travelMs = floorsToMove * 1000;
 
@@ -111,7 +133,7 @@ export default function Home() {
 
     setTimeout(() => {
       setCurrent(floor);
-      setTimeout(() => setDoorsOpen(true), travelMs + 2000);
+      setTimeout(() => setDoorsOpen(true), travelMs + 1700);
     }, 600);
   };
 
@@ -218,6 +240,44 @@ export default function Home() {
         </div>
         <div className="sidewalk bottom"></div>
       </div>
+      {showFloorPage !== null && (
+        <div
+          onClick={() => setShowFloorPage(null)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 9999,
+            backgroundColor: "rgba(0,0,0,0.5)", // dim the scene
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "white",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: "2rem",
+              animation: "expandFull 0.4s ease-out forwards",
+              cursor: "pointer",
+            }}
+          >
+            {showFloorPage === 0 && (
+              <AboutMePage onClose={() => setShowFloorPage(null)} />
+            )}
+            {showFloorPage === 1 && "1: My Education"}
+            {showFloorPage === 2 && "2: My Projects"}
+            {showFloorPage === 3 && "3: Contact Me"}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

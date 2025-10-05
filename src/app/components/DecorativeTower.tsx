@@ -90,10 +90,10 @@ export default function DecorativeTower({
         border: `6px solid ${border}`,
         borderRadius:
           shape === "taper"
-            ? "12px 12px 40px 40px"
+            ? "12px 12px 0 0"
             : shape === "wedge"
             ? "60px 12px 0 0"
-            : "8px",
+            : "8px 8px 0 0",
         overflow: "hidden",
         position: "relative",
         display: "flex",

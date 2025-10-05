@@ -51,6 +51,26 @@ export default function Elevator({ current, doorsOpen }: Props) {
     }
   }, [current, prevFloor]);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    if (isMoving) {
+      interval = setInterval(() => {
+        const el = document.getElementById("elevatorContainer");
+        if (el) {
+          el.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }, 100); // re-center several times per second
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isMoving]);
+
   return (
     <div className="tower">
       <div
@@ -75,54 +95,55 @@ export default function Elevator({ current, doorsOpen }: Props) {
           <div className="antenna"></div>
 
           {/* Floating neon sign */}
+          <div className="neon-container">
+            <h1 className="text neon-sign">
+              <div className="line cage">
+                <span className="word">
+                  <span className="letter">N</span>
+                  <span className="letter">O</span>
+                  <span className="letter">W</span>
+                </span>
 
-          <h1 className="text neon-sign">
-            <div className="line cage">
-              <span className="word">
+                <span className="word">
+                  <span className="letter">V</span>
+                  <span className="letter">I</span>
+                  <span className="letter">E</span>
+                  <span className="letter">W</span>
+                  <span className="letter">I</span>
+                  <span className="letter">N</span>
+                  <span className="letter">G</span>
+                </span>
+
+                <span className="word">
+                  <span className="letter">:</span>
+                </span>
+              </div>
+
+              <div className="line cage extend">
+                <span className="word">
+                  <span className="letter">J</span>
+                  <span className="letter">U</span>
+                  <span className="letter">S</span>
+                  <span className="letter">T</span>
+                  <span className="letter">I</span>
+                  <span className="letter">N</span>
+                </span>
+
+                <span className="letter">A</span>
+                <span className="letter">L</span>
+                <span className="letter">A</span>
+                <span className="letter">A</span>
                 <span className="letter">N</span>
-                <span className="letter">O</span>
-                <span className="letter">W</span>
-              </span>
-
-              <span className="word">
-                <span className="letter">V</span>
-                <span className="letter">I</span>
-                <span className="letter">E</span>
-                <span className="letter">W</span>
-                <span className="letter">I</span>
+                <span className="letter">-</span>
                 <span className="letter">N</span>
                 <span className="letter">G</span>
-              </span>
-
-              <span className="word">
-                <span className="letter">:</span>
-              </span>
-            </div>
-
-            <div className="line cage extend">
-              <span className="word">
-                <span className="letter">J</span>
                 <span className="letter">U</span>
-                <span className="letter">S</span>
-                <span className="letter">T</span>
-                <span className="letter">I</span>
-                <span className="letter">N</span>
-              </span>
-
-              <span className="letter">A</span>
-              <span className="letter">L</span>
-              <span className="letter">A</span>
-              <span className="letter">A</span>
-              <span className="letter">N</span>
-              <span className="letter">-</span>
-              <span className="letter">N</span>
-              <span className="letter">G</span>
-              <span className="letter">U</span>
-              <span className="letter">Y</span>
-              <span className="letter">E</span>
-              <span className="letter broken">N</span>
-            </div>
-          </h1>
+                <span className="letter">Y</span>
+                <span className="letter">E</span>
+                <span className="letter broken">N</span>
+              </div>
+            </h1>
+          </div>
         </div>
       </div>
 
@@ -145,7 +166,39 @@ export default function Elevator({ current, doorsOpen }: Props) {
           ></div>
         </div>
 
-        <div id="elevator">
+        <div id="elevator" style={{ position: "relative" }}>
+          {/* 👇 Add the panel here */}
+          {doorsOpen && (
+            <div
+              className="floor-view"
+              onClick={() => {
+                const event = new CustomEvent("open-floor-page", {
+                  detail: { floor: current },
+                });
+                window.dispatchEvent(event);
+              }}
+              style={{
+                position: "absolute",
+                bottom: "10%",
+                width: "70%",
+                height: "60%",
+                backgroundColor: "#ccc",
+                border: "2px solid #888",
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: "1.2rem",
+                zIndex: 5,
+              }}
+            >
+              {current === 0 && "About Me"}
+              {current === 1 && "My Education"}
+              {current === 2 && "My Projects"}
+              {current === 3 && "Contact Me"}
+            </div>
+          )}
+
           <div className="door-wrapper">
             <div className={`door left ${doorsOpen ? "open" : ""}`} />
             <div className={`door right ${doorsOpen ? "open" : ""}`} />
