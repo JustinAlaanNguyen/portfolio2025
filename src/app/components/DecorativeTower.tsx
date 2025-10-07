@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
 
 type Props = {
   floors: number;
@@ -12,13 +12,6 @@ type Props = {
   shape?: "rect" | "taper" | "wedge";
 };
 
-type WindowBlock = {
-  id: string;
-  x: number;
-  y: number;
-  lit: boolean;
-};
-
 export default function DecorativeTower({
   floors,
   rows,
@@ -29,45 +22,14 @@ export default function DecorativeTower({
   height,
   shape = "rect",
 }: Props) {
-  const [windows, setWindows] = useState<WindowBlock[][]>([]);
+  const windowRefs = useRef<HTMLDivElement[][]>([]); // 2D array of refs per floor and window
 
-  // Generate strict grid (no random spacing, just consistent lit/unlit)
-  useEffect(() => {
-    const newFloors: WindowBlock[][] = [];
+  const windowGrid = useMemo(() => {
+    const totalFloors: number[] = [];
+    for (let f = 0; f < floors; f++) totalFloors.push(f);
+    return totalFloors;
+  }, [floors]);
 
-    for (let f = 0; f < floors; f++) {
-      const floorBlocks: WindowBlock[] = [];
-
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          floorBlocks.push({
-            id: `${f}-${y}-${x}`,
-            x,
-            y,
-            lit: Math.random() < 0.15, // random lighting, but not layout
-          });
-        }
-      }
-
-      newFloors.push(floorBlocks);
-    }
-
-    setWindows(newFloors);
-  }, [floors, rows, cols]);
-
-  // Flicker effect
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setWindows((prev) =>
-        prev.map((floor) =>
-          floor.map((w) => (Math.random() < 0.05 ? { ...w, lit: !w.lit } : w))
-        )
-      );
-    }, 1200);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Tower colors
   const bg =
     colorScheme === "brick"
       ? "#5a2a27"
@@ -80,6 +42,31 @@ export default function DecorativeTower({
       : colorScheme === "glass"
       ? "#0a1c2b"
       : "#222";
+
+  // Randomly turn lights on/off
+  useEffect(() => {
+    const intervals: NodeJS.Timeout[] = [];
+
+    windowRefs.current.forEach((floor, floorIndex) => {
+      floor.forEach((windowDiv, windowIndex) => {
+        if (!windowDiv) return;
+
+        const toggleLight = () => {
+          const isOn = windowDiv.classList.contains("on");
+          if (Math.random() < 0.5) {
+            windowDiv.classList.toggle("on", !isOn);
+          }
+          const nextTime = 2000 + Math.random() * 10000; // 2-5s random interval
+          intervals.push(setTimeout(toggleLight, nextTime));
+        };
+
+        toggleLight();
+      });
+    });
+
+    return () => intervals.forEach(clearTimeout);
+  }, [floors, rows, cols]);
+
   return (
     <div
       className={`decor-tower ${className ?? ""}`}
@@ -100,40 +87,48 @@ export default function DecorativeTower({
         flexDirection: "column-reverse",
       }}
     >
-      {windows.map((floor, fi) => (
-        <div
-          key={fi}
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${cols}, 1fr)`,
-            gridTemplateRows: `repeat(${rows}, 1fr)`,
-            gap: "6px", // bigger spacing between windows
-            flex: "1",
-            padding: "7px", // ✅ space between windows and building edges
-          }}
-        >
-          {floor.map((w) => (
-            <div
-              key={w.id}
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+      {windowGrid.map((floorIndex) => {
+        if (!windowRefs.current[floorIndex]) {
+          windowRefs.current[floorIndex] = [];
+        }
+        return (
+          <div
+            key={floorIndex}
+            className="decor-floor"
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${cols}, 1fr)`,
+              gridTemplateRows: `repeat(${rows}, 1fr)`,
+              gap: "6px",
+              flex: "1",
+              padding: "7px",
+            }}
+          >
+            {Array.from({ length: rows * cols }).map((_, i) => (
               <div
+                key={i}
                 style={{
-                  width: "85%", // ✅ shrink window
-                  height: "70%",
-                  background: w.lit ? "#ffe9a3" : "#111",
-                  borderRadius: "3px",
-                  transition: "background 0.4s ease",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
-              />
-            </div>
-          ))}
-        </div>
-      ))}
+              >
+                <div
+                  ref={(el) => {
+                    windowRefs.current[floorIndex][i] = el!;
+                  }}
+                  className="decor-window"
+                  style={{
+                    width: "85%",
+                    height: "70%",
+                    borderRadius: "3px",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }

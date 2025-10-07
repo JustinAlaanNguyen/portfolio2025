@@ -22,7 +22,7 @@ export function startVineAnimation(
   window.addEventListener("resize", resizeCanvasToDisplaySize);
 
   // CONFIG
-  const spawnTime = 100;
+  const spawnTime = 70;
   const deltaMs = 15;
   const vineColor = "rgb(34, 139, 34)";
   const rnd = (a = 0, b = 1) => a + Math.random() * (b - a);
@@ -170,22 +170,28 @@ export function startVineAnimation(
       y = 0,
       angle = 0;
 
+    // Vertical position bias: toward middle for aesthetics
+    const yMin = h * 0.2;
+    const yMax = h * 0.8;
+
     if (side === 0) {
-      x = rnd(10, w - 10);
-      y = h + 10;
+      // bottom
+      x = rnd(w * 0.2, w * 0.8);
+      y = h - 20; // start slightly above screen
       angle = rnd(-Math.PI / 3, Math.PI / 3);
     } else if (side === 1) {
-      x = 10;
-      y = rnd(30, h - 30);
-      angle = rnd(-Math.PI / 6, Math.PI / 6);
-   } else {
-        x = w - 10;
-        y = rnd(30, h - 30);
-        angle = rnd(Math.PI * (5 / 6), Math.PI * (7 / 6)) - Math.PI;
-      }
+      // left
+      x = w * 0.02; // 2% from left edge
+      y = rnd(yMin, yMax);
+      angle = rnd(-Math.PI / 8, Math.PI / 8); // aim slightly inward
+    } else {
+      // right
+      x = w * 0.9; // 10% from right edge
+      y = rnd(yMin, yMax);
+      angle = rnd(Math.PI - Math.PI / 8, Math.PI + Math.PI / 8); // aim inward
+    }
 
-
-    vines.push(new Vine(x, y, angle, 20));
+    vines.push(new Vine(x, y, angle, rnd(15, 25)));
   }
 
   initVines();
@@ -204,7 +210,9 @@ export function startVineAnimation(
     for (let i = vines.length - 1; i >= 0; i--) {
       const v = vines[i];
       if (v.done()) {
-        leaves.push(new Leaf(v.x, v.y, Math.atan2(v.dirY, v.dirX), rnd(0.7, 1.2)));
+        leaves.push(
+          new Leaf(v.x, v.y, Math.atan2(v.dirY, v.dirX), rnd(0.7, 1.2))
+        );
         vines.splice(i, 1);
         break;
       }

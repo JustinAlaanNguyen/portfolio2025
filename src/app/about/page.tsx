@@ -16,8 +16,8 @@ export default function AboutPage() {
     const rect = canvas.getBoundingClientRect();
 
     const avatar = {
-      x: rect.width / 1.6,
-      y: rect.height / 2.06,
+      x: window.innerWidth * 0.494,
+      y: window.innerHeight * 0.7,
       r: 100,
     };
 
@@ -63,21 +63,29 @@ export default function AboutPage() {
           }}
         >
           <h1 className="about-title">
-            {"ABOUT ME".split("").map((char, i) => (
+            {"Justin Alaan-Nguyen".split("").map((char, i) => (
               <motion.span
                 key={i}
+                className="inline-block origin-left"
                 variants={{
-                  hidden: { opacity: 0, y: 40, scale: 0.8 },
+                  hidden: {
+                    opacity: 0,
+                    scaleX: 0,
+                    transformOrigin: "0% 50%", // Grow from left edge
+                  },
                   visible: {
                     opacity: 1,
-                    y: 0,
-                    scale: [1, 1.25, 0.95, 1],
+                    scaleX: 1,
                     transition: {
-                      duration: 0.8,
-                      ease: "easeOut",
-                      delay: i * 0.08,
+                      duration: 0.6,
+                      ease: [0.16, 1, 0.3, 1],
+                      delay: i * 0.08, // letter delay
                     },
                   },
+                }}
+                style={{
+                  display: "inline-block",
+                  transformOrigin: "0% 50%", // ensures growth from left
                 }}
               >
                 {char === " " ? "\u00A0" : char}
