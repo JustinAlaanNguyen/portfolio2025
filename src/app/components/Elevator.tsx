@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Floor from "./Floor";
+import { useRouter } from "next/navigation";
 
 type Props = {
   current: number;
@@ -10,6 +11,7 @@ type Props = {
 export default function Elevator({ current, doorsOpen }: Props) {
   const [isMoving, setIsMoving] = useState(false);
   const [prevFloor, setPrevFloor] = useState(current);
+  const router = useRouter();
 
   // Floor sizes (must match CSS for b1–b4)
   const floorSizes = [
@@ -96,7 +98,7 @@ export default function Elevator({ current, doorsOpen }: Props) {
 
           {/* Floating neon sign */}
           <div className="neon-container">
-            <h1 className="text neon-sign">
+            <h1 className="neon-text neon-sign">
               <div className="line cage">
                 <span className="word">
                   <span className="letter">N</span>
@@ -172,10 +174,10 @@ export default function Elevator({ current, doorsOpen }: Props) {
             <div
               className="floor-view"
               onClick={() => {
-                const event = new CustomEvent("open-floor-page", {
-                  detail: { floor: current },
-                });
-                window.dispatchEvent(event);
+                if (current === 0) router.push("/about");
+                if (current === 1) router.push("/education");
+                if (current === 2) router.push("/projects");
+                if (current === 3) router.push("/contact");
               }}
               style={{
                 position: "absolute",

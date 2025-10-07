@@ -5,7 +5,7 @@ type Props = {
   onClose: () => void;
 };
 
-export default function AboutMePage({ onClose }: Props) {
+export default function MyEducationPage({ onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* 🌿 Gradient forest-like background */}

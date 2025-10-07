@@ -5,7 +5,6 @@ import FloorSelect from "./components/FloorSelect";
 import Sky from "./components/Sky";
 import DecorativeTower from "./components/DecorativeTower";
 import SkyscraperTower from "./components/SkyscraperTower";
-import AboutMePage from "./AboutMePage";
 
 const FLOORS = 5;
 
@@ -240,44 +239,6 @@ export default function Home() {
         </div>
         <div className="sidewalk bottom"></div>
       </div>
-      {showFloorPage !== null && (
-        <div
-          onClick={() => setShowFloorPage(null)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            zIndex: 9999,
-            backgroundColor: "rgba(0,0,0,0.5)", // dim the scene
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              backgroundColor: "white",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              fontSize: "2rem",
-              animation: "expandFull 0.4s ease-out forwards",
-              cursor: "pointer",
-            }}
-          >
-            {showFloorPage === 0 && (
-              <AboutMePage onClose={() => setShowFloorPage(null)} />
-            )}
-            {showFloorPage === 1 && "1: My Education"}
-            {showFloorPage === 2 && "2: My Projects"}
-            {showFloorPage === 3 && "3: Contact Me"}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

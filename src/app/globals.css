@@ -1,20 +1,30 @@
-/* Reset */
-* {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Reset */
+*, *::before, *::after {
   box-sizing: border-box;
+}
+
+* {
   margin: 0;
   padding: 0;
 }
-html,
-body {
+
+html, body {
   height: 100%;
   width: 100%;
-  margin: 0;
-  background: transparent;
-  font-family: system-ui, sans-serif;
-  overflow-y: scroll; /* allow vertical scrolling */
-  scroll-behavior: smooth; /* nice scrolling */
+  font-family: var(--font-inter, system-ui, sans-serif);
+  background-color: transparent; 
+  color: white;
+  scroll-behavior: smooth;
   overflow-x: hidden;
+    line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
 #canvas {
   min-height: 100vh;
   width: 100vw;
@@ -242,7 +252,7 @@ body {
   content: "";
   position: absolute;
   top: -10px; /* sits just above antenna */
-  left: 50%;
+  left: -5;
   transform: translateX(-50%);
   width: 14px;
   height: 14px;
@@ -267,16 +277,14 @@ body {
   margin: 0;
   padding: 0;
 }
-
-.text {
+.neon-text {
   font-family: "Liberty";
   font-weight: 100;
-  font-size: 4rem; /* match the demo */
+  font-size: 4rem;
   letter-spacing: -0.15em;
-  display: flex;
-  display: block; /* ✅ let the lines size themselves */
-  text-align: center; /* side by side like original */
-  line-height: 1; /* ✅ keeps lines snug */
+  display: block;
+  text-align: center;
+  line-height: 1;
 }
 
 .letter {
@@ -520,6 +528,32 @@ body {
   padding-right: 15px;
   display: flex;
   justify-content: center;
+}
+
+.tower-zoom-wrapper {
+  position: relative;
+  overflow: hidden;
+  transition: transform 1.2s ease-in-out, opacity 1.2s ease-in-out;
+  transform-origin: center center;
+}
+
+.tower-zoom-wrapper.zooming-in {
+  transform: scale(4) translateY(10%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.tower-zoom-wrapper {
+  position: relative;
+  overflow: hidden;
+  transition: transform 1.2s ease-in-out, opacity 1.2s ease-in-out;
+  transform-origin: center center;
+}
+
+.tower-zoom-wrapper.zooming-in {
+  transform: scale(4);
+  opacity: 0.9;
+  pointer-events: none;
 }
 
 /* Neon doors */
@@ -1143,4 +1177,191 @@ body {
 :root {
   --b5w: 10vw; /* matches .floor.b5 width */
   --b5h: 20vh; /* matches .floor.b5 height */
+}
+
+/* === ABOUT PAGE STYLES (Refined, No Blur Except Title) === */
+
+.about-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #f5f2eb, #e7dfd3);
+  color: #3a3a2e;
+  font-family: "Inter", sans-serif;
+}
+
+/* Subtle gradient light motion */
+.about-background {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(210, 180, 140, 0.12)),
+              radial-gradient(circle at 80% 80%, rgba(144, 238, 144, 0.18));
+  animation: pulse 12s infinite alternate;
+  z-index: 0;
+}
+
+/* Vine canvas */
+.about-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: multiply;
+}
+
+/* Soft overlay — removed blur */
+.about-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(245, 242, 235, 0.45);
+  z-index: 2;
+}
+
+/* Main content */
+.about-content {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  max-width: 800px;
+  gap: 2.5rem;
+}
+
+/* === TITLE === */
+.about-title-wrapper {
+  position: relative;
+  display: inline-block;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  border-radius: 2rem;
+  background: rgba(245, 242, 235, 0.7);
+  backdrop-filter: blur(3px); /* ✅ keep blur only here */
+  border: 1px solid rgba(160, 150, 120, 0.25);
+  box-shadow: 0 0 22px rgba(180, 170, 120, 0.25);
+}
+
+.about-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(2.8rem, 7vw, 5rem);
+  font-weight: 800;
+  background: linear-gradient(to right, #6b7a58, #a2b980, #b6cfa0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 12px rgba(180, 200, 150, 0.35);
+  line-height: 1.1;
+}
+
+.about-underline {
+  position: absolute;
+  left: 4%;
+  bottom: 0.9rem;
+  transform: translateX(-50%);
+  width: 35rem;
+  height: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #c4d6b0, #a3b38b);
+}
+
+/* === AVATAR === */
+.about-avatar {
+  position: relative;
+  width: clamp(20rem, 28vw, 22rem);
+  height: clamp(20rem, 28vw, 22rem);
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid transparent;
+  background: linear-gradient(to top right, #d4c9a3, #f0e8d0, #b8b093);
+  padding: 3px;
+  box-shadow: 0 0 30px rgba(150, 130, 90, 0.25);
+  margin-bottom: 1rem;
+}
+
+.about-avatar-inner {
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  background: #fffaf0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* === CARD === */
+.about-card {
+  width: 100%;
+  background: rgba(255, 250, 240, 0.92);
+  border: 1px solid rgba(216, 210, 176, 0.6);
+  border-radius: 2rem;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 0 40px rgba(190, 175, 130, 0.3);
+  transition: box-shadow 0.6s ease;
+  /* ❌ removed backdrop-filter blur */
+}
+
+.about-card:hover {
+  box-shadow: 0 0 55px rgba(180, 170, 120, 0.4);
+}
+
+/* === TEXT === */
+.about-role {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(1.6rem, 2.6vw, 2rem);
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+  color: #758467;
+  letter-spacing: 0.05em;
+}
+
+.about-description {
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  line-height: 1.75;
+  color: #3b3b2c;
+  font-weight: 450;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* === ANIMATION === */
+@keyframes pulse {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+/* === RESPONSIVE REFINEMENTS === */
+@media (max-width: 768px) {
+  .about-content {
+    padding: 1.75rem;
+    gap: 2rem;
+  }
+
+  .about-title-wrapper {
+    padding: 1.25rem 1.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .about-card {
+    padding: 2rem 1.5rem;
+  }
 }
