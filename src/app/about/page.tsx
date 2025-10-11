@@ -3,30 +3,59 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { startVineAnimation } from "./VineAnimation";
 import { startAvatarVineAnimation } from "./AvatarVineAnimation";
+import { startVineAnimation } from "./VineAnimation";
+import "../about.css"; // ✅ Import your CSS file
 
 export default function AboutPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const avatarRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
+    if (!canvasRef.current || !avatarRef.current) return;
 
-    const avatar = {
-      x: window.innerWidth * 0.494,
-      y: window.innerHeight * 0.7,
-      r: 100,
+    let initialized = false;
+    let stopBorderVine: (() => void) | null = null;
+    let stopBackgroundVine: (() => void) | null = null;
+
+    const startAnimations = () => {
+      if (initialized) return;
+      initialized = true;
+
+      if (!canvasRef.current || !avatarRef.current) return;
+      const canvas = canvasRef.current;
+      const avatarRect = avatarRef.current.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+
+      // Manual tweak to align vine ring
+      const manualNudge = { dx: 14, dy: -28 };
+
+      const x =
+        avatarRect.left -
+        canvasRect.left +
+        avatarRect.width / 2 +
+        manualNudge.dx;
+      const y =
+        avatarRect.top -
+        canvasRect.top +
+        avatarRect.height / 2 +
+        manualNudge.dy;
+      const r = avatarRect.width / 2;
+
+      stopBackgroundVine = startVineAnimation(canvas, { x, y, r });
+      stopBorderVine = startAvatarVineAnimation(canvas, { x, y, r });
     };
 
-    const stopVines = startVineAnimation(canvas, avatar);
-    const stopBorderVine = startAvatarVineAnimation(canvas, avatar);
+    // ✅ Wait until layout is fully painted and animations settle
+    const delay = setTimeout(() => {
+      requestAnimationFrame(startAnimations);
+    }, 400); // 300–500ms gives layout time to stabilize
 
     return () => {
-      stopVines();
-      stopBorderVine();
+      clearTimeout(delay);
+      if (stopBorderVine) stopBorderVine();
+      if (stopBackgroundVine) stopBackgroundVine();
     };
   }, []);
 
@@ -103,6 +132,7 @@ export default function AboutPage() {
 
         {/* Avatar */}
         <motion.div
+          ref={avatarRef} // ✅ ADD THIS
           className="about-avatar"
           whileHover={{ scale: 1.05, rotate: 0.5 }}
           transition={{ type: "spring", stiffness: 200 }}

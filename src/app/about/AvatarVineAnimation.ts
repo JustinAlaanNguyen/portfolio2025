@@ -77,7 +77,7 @@ export function startAvatarVineAnimation(
   const startAngle = angle;
 
   const dpr = window.devicePixelRatio || 1;
-  const radius = avatarCircle.r + 85; // Slightly outside avatar border
+  const radius = avatarCircle.r + 20; // Slightly outside avatar border
   const centerX = avatarCircle.x;
   const centerY = avatarCircle.y;
 

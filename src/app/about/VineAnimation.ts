@@ -177,16 +177,16 @@ export function startVineAnimation(
     if (side === 0) {
       // bottom
       x = rnd(w * 0.2, w * 0.8);
-      y = h - 20; // start slightly above screen
+      y = h; 
       angle = rnd(-Math.PI / 3, Math.PI / 3);
     } else if (side === 1) {
       // left
-      x = w * 0.02; // 2% from left edge
+      x = 0;
       y = rnd(yMin, yMax);
       angle = rnd(-Math.PI / 8, Math.PI / 8); // aim slightly inward
     } else {
       // right
-      x = w * 0.9; // 10% from right edge
+      x = w; 
       y = rnd(yMin, yMax);
       angle = rnd(Math.PI - Math.PI / 8, Math.PI + Math.PI / 8); // aim inward
     }

@@ -1,0 +1,44 @@
+.home-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 🌌 Foreground content container */
+.content {
+  position: relative;
+  z-index: 20; /* above everything else */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.title {
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 0 10px #fff, 0 0 20px #9cf;
+}
+
+/* 🌿 Plant container layer */
+.plant-container {
+  position: fixed;
+  inset: 0;
+  z-index: 10; /* Between sky (z=0) and content (z=20) */
+  pointer-events: none;
+  background: transparent;
+}
+
+/* ✅ Ensure the canvas takes space and is visible */
+.plant-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: transparent !important;
+  border: 1px solid red; /* temp debug */
+}

@@ -1,4 +1,5 @@
 "use client";
+import "./Sky.css";
 import { useEffect } from "react";
 
 export default function Sky() {
