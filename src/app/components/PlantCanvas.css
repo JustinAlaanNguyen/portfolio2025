@@ -1,0 +1,56 @@
+
+@font-face {
+  font-family: "Mobalys Regular"; /* you can name it anything */
+  src: url("/fonts/JustinFont-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.pop-text {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-block;
+  font-size: 5rem;
+  font-weight: normal;
+  white-space: nowrap;
+  font-family: "Mobalys Regular", sans-serif !important;
+  color: #ecf39e;
+}
+
+.line1 {
+  top: 10%;  /* first line */
+}
+
+.line2 {
+  top: 20%;  /* second line */
+}
+.pop-letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+  animation: floatBounce 0.8s ease-out forwards;
+
+  /* ✅ Thin outline using text-shadow */
+ text-shadow:
+  -0.5px -0.5px 0 #000,
+   0.5px -0.5px 0 #000,
+  -0.5px  0.5px 0 #000,
+   0.5px  0.5px 0 #000;
+
+}
+
+@keyframes floatBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.05);
+  }
+  100% {
+    opacity: 1;                     /* ✅ Stay visible */
+    transform: translateY(0px) scale(1);
+  }
+}

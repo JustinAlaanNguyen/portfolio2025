@@ -1,99 +1,172 @@
 "use client";
+
+import React, { useMemo } from "react";
 import "./Sky.css";
-import { useEffect } from "react";
 
 export default function Sky() {
-  useEffect(() => {
-    const nightsky = ["#280F36", "#632B6C", "#BE6590", "#FFC1A0", "#FE9C7F"];
-    const starsContainer = document.querySelector(".stars");
-    const cross = document.querySelector(".stars-cross");
-    const crossAux = document.querySelector(".stars-cross-aux");
+  // arrays for repeated elements
 
-    function getRandomInt(min: number, max: number) {
-      return Math.random() * (max - min) + min;
-    }
+  const treesGreen1 = Array.from({ length: 6 });
+  const treesPurple1 = Array.from({ length: 6 });
+  const treesBlue1 = Array.from({ length: 6 });
 
-    if (starsContainer) {
-      const addStar = (
-        cls: string,
-        topRange: [number, number],
-        duration: [number, number],
-        extra?: (el: HTMLDivElement) => void
-      ) => {
-        const star = document.createElement("div");
-        star.className = cls;
-        star.style.top = `${getRandomInt(topRange[0], topRange[1])}vh`;
-        star.style.left = `${getRandomInt(0, 100)}vw`;
-        star.style.animationDuration = `${getRandomInt(
-          duration[0],
-          duration[1]
-        )}s`;
-        if (extra) extra(star);
-        starsContainer.appendChild(star);
-      };
+  const treesGreen2 = Array.from({ length: 4 });
+  const treesPurple2 = Array.from({ length: 4 });
+  const treesBlue2 = Array.from({ length: 4 });
 
-      for (let i = 0; i < 500; i++) {
-        addStar("star star-1 blink", [0, 40], [2, 5]);
-        addStar("star star-2 blink", [20, 70], [4, 8]);
-      }
+  const treesGreen3 = Array.from({ length: 2 });
+  const treesPurple3 = Array.from({ length: 2 });
+  const treesBlue3 = Array.from({ length: 2 });
 
-      for (let i = 0; i < 150; i++) {
-        addStar("star star-0", [0, 50], [1, 2.5]);
-        addStar("star star-1 blink", [0, 50], [2.5, 4]);
-        addStar("star star-2 blink", [0, 50], [4, 5]);
-      }
+  const leaves10 = Array.from({ length: 10 });
 
-      for (let i = 0; i < 100; i++) {
-        addStar("star star-0", [40, 75], [1, 3]);
-        addStar("star star-1 blink", [40, 75], [2, 4]);
-      }
-
-      for (let i = 0; i < 250; i++) {
-        addStar("star star-0", [0, 100], [1, 2]);
-        addStar("star star-1 blink", [0, 100], [2, 5]);
-        addStar("star star-2", [0, 100], [1, 4]);
-        addStar("star star-4 blink", [0, 70], [5, 7]);
-      }
-
-      for (let i = 0; i < 50; i++) {
-        addStar("star star-5 blink", [0, 50], [5, 7], (el) => {
-          const color = nightsky[Math.floor(Math.random() * nightsky.length)];
-          el.style.backgroundColor = color;
-          el.style.boxShadow = `0px 0px 6px 1px ${color}`;
-        });
-      }
-    }
-
-    const addBlur = (container: Element, count: number) => {
-      for (let i = 0; i < count; i++) {
-        const blur = document.createElement("div");
-        blur.className = "blur";
-        blur.style.top = `${getRandomInt(0, 100)}%`;
-        blur.style.left = `${getRandomInt(0, 100)}%`;
-        blur.style.backgroundColor =
-          nightsky[Math.floor(Math.random() * nightsky.length)];
-        container.appendChild(blur);
-      }
-    };
-
-    if (cross) addBlur(cross, 150);
-    if (crossAux) addBlur(crossAux, 120);
+  // waves randomized inline styles to mimic the Sass random behaviour
+  const waves = useMemo(() => {
+    return Array.from({ length: 100 }).map(() => {
+      const size = Math.floor(Math.random() * 90) + 40; // 40..129
+      const top = Math.floor(Math.random() * 200); // 0..199
+      const left = Math.floor(Math.random() * 400); // 0..399 vw-ish
+      const opacity = Math.random() * 0.5 + 0.05; // 0.05..0.55
+      const delay = Math.random() * 25; // 0..25s
+      return {
+        width: `${size}px`,
+        top: `${top}px`,
+        left: `${left}vw`,
+        opacity: `${opacity}`,
+        animationDelay: `${delay}s`,
+      } as React.CSSProperties;
+    });
   }, []);
 
   return (
-    <div className="sky">
-      <div className="mountains">
-        <div className="mountain-1"></div>
-        <div className="mountain-2"></div>
-        <div className="land-1"></div>
-        <div className="land-2"></div>
-        <div className="land-3"></div>
+    <div className="container">
+      <div className="sky">
+        <div className="sun" />
+
+        <div className="mountains-distant">
+          <div className="mountain-left" />
+          <div className="mountain-right" />
+        </div>
+
+        <div className="mountains-near">
+          <div className="mountain-left-back">
+            <div className="trees-green-1">
+              {treesGreen1.map((_, i) => (
+                <div key={i} className="tree" />
+              ))}
+            </div>
+            <div className="trees-purple-1">
+              {treesPurple1.map((_, i) => (
+                <div key={i} className="tree" />
+              ))}
+            </div>
+            <div className="trees-blue-1">
+              {treesBlue1.map((_, i) => (
+                <div key={i} className="tree" />
+              ))}
+            </div>
+          </div>
+
+          <div className="mountain-right-middle">
+            <div className="trees-green-2">
+              {treesGreen2.map((_, i) => (
+                <div key={i} className="tree" />
+              ))}
+            </div>
+            <div className="trees-purple-2">
+              {treesPurple2.map((_, i) => (
+                <div key={i} className="tree" />
+              ))}
+            </div>
+            <div className="trees-blue-2">
+              {treesBlue2.map((_, i) => (
+                <div key={i} className="tree" />
+              ))}
+            </div>
+          </div>
+
+          <div className="mountain-left-front">
+            <div className="trees-green-3">
+              {treesGreen3.map((_, i) => (
+                <div key={i} className="tree" />
+              ))}
+            </div>
+            <div className="trees-purple-3">
+              {treesPurple3.map((_, i) => (
+                <div key={i} className="tree" />
+              ))}
+            </div>
+            <div className="trees-blue-3">
+              {treesBlue3.map((_, i) => (
+                <div key={i} className="tree" />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="water">
+          {waves.map((style, i) => (
+            <div key={i} className="wave" style={style} />
+          ))}
+        </div>
+
+        <div className="hills">
+          <div className="hill-left" />
+          <div className="hill-middle" />
+          <div className="hill-right" />
+        </div>
+
+        <div className="trunk-middle">
+          <div className="branch-1" />
+          <div className="branch-2" />
+          <div className="branch-3" />
+          <div className="branch-4" />
+          <div className="branch-5" />
+          <div className="branch-6" />
+          <div className="branch-7" />
+          <div className="branch-other-side-1" />
+          <div className="branch-other-side-2" />
+          <div className="branch-other-side-3" />
+          <div className="stump-1" />
+          <div className="stump-2" />
+        </div>
+
+        <div className="trunk-left" />
+        <div className="trunk-right" />
+
+        <div className="plant">
+          <div className="stem" />
+          <div className="leaves">
+            {leaves10.map((_, i) => (
+              <div key={i} className="leaf" />
+            ))}
+          </div>
+        </div>
+
+        <div className="plant-2">
+          <div className="stem-2" />
+          <div className="orb" />
+          <div className="orb-glow" />
+        </div>
+
+        <div className="plant-3">
+          <div className="stem-3" />
+          <div className="leaves-3">
+            {leaves10.map((_, i) => (
+              <div key={i} className="leaf" />
+            ))}
+          </div>
+        </div>
+
+        <div className="plant-4">
+          <div className="stem-4" />
+          <div className="leaves-4">
+            {leaves10.map((_, i) => (
+              <div key={i} className="leaf" />
+            ))}
+          </div>
+        </div>
       </div>
-      <div className="mountains-base"></div>
-      <div className="light-base"></div>
-      <div className="stars"></div>
-      <div className="stars-cross"></div>
-      <div className="stars-cross-aux"></div>
     </div>
   );
 }

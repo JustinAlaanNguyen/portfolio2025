@@ -1,9 +1,10 @@
 "use client";
-
-import { useEffect, useRef } from "react";
+import "./PlantCanvas.css";
+import { useEffect, useRef, useState } from "react";
 
 export default function PlantCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [showText, setShowText] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -262,13 +263,19 @@ export default function PlantCanvas() {
       canvas.width / 2,
       canvas.height - 15,
       -Math.PI / 2,
-      (canvas.height - 15) / 4, // shorter trunk life
+      (canvas.height - 15) / 3.5, // shorter trunk life
       30,
       0
     );
 
     const draw = () => {
       mainBranch.draw();
+      // 🔥 Trigger text when close to end
+      const remaining = mainBranch.lifetime - mainBranch.life;
+      if (!showText && remaining < 60) {
+        setShowText(true);
+      }
+
       requestAnimationFrame(draw);
     };
 
@@ -278,6 +285,33 @@ export default function PlantCanvas() {
   return (
     <div className="plant-container">
       <canvas ref={canvasRef} className="plant-canvas" />
+      {showText && (
+        <>
+          <div className="pop-text line1">
+            {"Justin".split("").map((char, i) => (
+              <span
+                key={i}
+                className="pop-letter"
+                style={{ animationDelay: `${(i + 5) * 0.08}s` }}
+              >
+                {char}
+              </span>
+            ))}
+          </div>
+
+          <div className="pop-text line2">
+            {"Alaan-Nguyen".split("").map((char, i) => (
+              <span
+                key={i}
+                className="pop-letter"
+                style={{ animationDelay: `${i * 0.08}s` }}
+              >
+                {char}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
