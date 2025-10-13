@@ -24,26 +24,54 @@ export default function PlantCanvas() {
       return x - Math.floor(x);
     };
 
-    interface Leaf {
+    class Leaf {
       x: number;
       y: number;
-      size: number;
-      maxSize: number;
-      rot: number;
-      swayOffset: number;
-      shade: number;
-    }
+      angle: number;
+      color: string;
+      maxWidth: number;
+      maxHeight: number;
+      age: number;
+      popDuration: number;
 
-    interface Flower {
-      x: number;
-      y: number;
-      size: number;
-      maxSize: number;
-      rot: number;
-    }
+      constructor(x: number, y: number, angle: number, color: string) {
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+        this.color = color;
+        this.maxWidth = 15 + rand() * 6;
+        this.maxHeight = 30 + rand() * 10;
+        this.age = 0;
+        this.popDuration = 25 + rand() * 10; // shorter burst
+      }
 
-    const leaves: Leaf[] = [];
-    const flowers: Flower[] = [];
+      draw() {
+        // t goes 0 → 1 over popDuration
+        const t = Math.min(this.age / this.popDuration, 1);
+
+        // Start at ~90% size, pop to 115%, then settle at 100%
+        const eased =
+          t < 0.4
+            ? 0.9 + (t * (1.15 - 0.9)) / 0.4 // 0.9 → 1.15
+            : 1.15 - ((t - 0.4) * (1.15 - 1)) / 0.6; // 1.15 → 1
+
+        const leafWidth = this.maxWidth * eased;
+        const leafHeight = this.maxHeight * eased;
+
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(leafWidth, 0, leafWidth, leafHeight);
+        ctx.quadraticCurveTo(0, leafHeight, 0, 0);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+
+        if (t < 1) this.age++;
+      }
+    }
 
     class Branch {
       x: number;
@@ -55,10 +83,10 @@ export default function PlantCanvas() {
       startWidth: number;
       lifetime: number;
       life: number;
-      nextLeaf: number;
       depth: number;
       children: Branch[];
       hasBranchedAtTop: boolean;
+      leaves: Leaf[] = [];
 
       constructor(
         x: number,
@@ -77,218 +105,170 @@ export default function PlantCanvas() {
         this.width = width;
         this.lifetime = life;
         this.life = 0;
-        this.nextLeaf = Math.round(rand() * 15) + 10;
         this.depth = depth;
         this.children = [];
         this.hasBranchedAtTop = false;
+        this.leaves = [];
       }
 
       draw() {
-        if (this.life > this.lifetime) return;
+        const doneGrowing = this.life > this.lifetime;
 
-        this.width = Math.max(
-          1,
-          this.startWidth * (1 - this.life / this.lifetime)
-        );
-
-        const branchColors = [
-          "#3B2F2F",
-          "#4C3B2A",
-          "#6B4423",
-          "#8C593B",
-          "#A06C48",
-        ];
-        ctx.fillStyle =
-          branchColors[Math.min(this.depth, branchColors.length - 1)];
-
-        // 🌿 Draw branch
-        if (this.width > 2) {
-          ctx.beginPath();
-          ctx.ellipse(
-            this.x,
-            this.y,
-            this.width,
-            this.width,
-            0,
-            0,
-            Math.PI * 2
+        // ✅ Only branch movement, branching, and leaf spawning stop after lifetime
+        if (!doneGrowing) {
+          // ✅ Width taper
+          this.width = Math.max(
+            1,
+            this.startWidth * (1 - this.life / this.lifetime)
           );
-          ctx.fill();
-        } else {
-          ctx.beginPath();
-          ctx.moveTo(this.x, this.y);
-          const nextX = this.x + Math.cos(this.swing) * 3.5;
-          const nextY = this.y + Math.sin(this.swing) * 3.5;
-          ctx.lineTo(nextX, nextY);
-          ctx.strokeStyle = ctx.fillStyle;
-          ctx.lineWidth = this.width * 1.2;
-          ctx.lineCap = "round";
-          ctx.stroke();
-        }
 
-        // 🌀 Movement + noise sway
-        this.x += Math.cos(this.swing) * 3.5;
-        this.y += Math.sin(this.swing) * 3.5;
+          // ✅ Colors by depth
+          const branchColors = [
+            "#3B2F2F",
+            "#4C3B2A",
+            "#6B4423",
+            "#8C593B",
+            "#A06C48",
+          ];
+          ctx.fillStyle =
+            branchColors[Math.min(this.depth, branchColors.length - 1)];
 
-        // 🌬 Slight outward lean based on depth
-        const outwardBias =
-          (this.depth - 1) * 0.1 * (this.trending > 0 ? 1 : -1);
-
-        this.swing =
-          this.depth === 0
-            ? this.trending
-            : this.trending +
-              outwardBias +
-              (Math.sin(this.noiseOffset) * Math.PI) / 4 +
-              this.depth * 0.08;
-        this.noiseOffset += 0.05;
-        this.life++;
-
-        // 🍃 Leaves only for depth > 1 and after half lifetime
-        if (
-          this.depth > 1 &&
-          this.life >= this.lifetime * 0.5 &&
-          this.life >= this.nextLeaf
-        ) {
-          this.nextLeaf += 6 + rand() * 10;
-          const leafCount = 2 + Math.floor(rand() * 3);
-          for (let i = 0; i < leafCount; i++) {
-            const spread = 18 + rand() * 20;
-            const angleFromBranch =
-              this.trending + (rand() - 0.5) * Math.PI * 0.8;
-            leaves.push({
-              x: this.x + Math.cos(angleFromBranch) * spread,
-              y: this.y + Math.sin(angleFromBranch) * spread,
-              size: 0,
-              maxSize: 6 + rand() * 5,
-              rot: angleFromBranch + Math.PI / 2,
-              swayOffset: rand() * Math.PI * 2,
-              shade: 0.8 + rand() * 0.4,
-            });
+          // ✅ Draw segment
+          if (this.width > 2) {
+            ctx.beginPath();
+            ctx.ellipse(
+              this.x,
+              this.y,
+              this.width,
+              this.width,
+              0,
+              0,
+              Math.PI * 2
+            );
+            ctx.fill();
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            const nextX = this.x + Math.cos(this.swing) * 3.5;
+            const nextY = this.y + Math.sin(this.swing) * 3.5;
+            ctx.lineTo(nextX, nextY);
+            ctx.strokeStyle = ctx.fillStyle;
+            ctx.lineWidth = this.width * 1.2;
+            ctx.lineCap = "round";
+            ctx.stroke();
           }
-        }
 
-        // 🌸 Rare flowers on deeper branches
-        if (rand() < 0.0005 && this.depth > 2) {
-          flowers.push({
-            x: this.x,
-            y: this.y,
-            size: 0,
-            maxSize: 5 + rand() * 2,
-            rot: rand() * Math.PI * 2,
-          });
-        }
+          // ✅ Move forward
+          this.x += Math.cos(this.swing) * 3.5;
+          this.y += Math.sin(this.swing) * 3.5;
 
-        // 🌿 Controlled depth-based branching
-        if (this.depth < 5) {
-          const canBranchNow = this.life >= this.lifetime * 0.3;
+          // ✅ Curvature & sway
+          const upwardCorrection =
+            (Math.PI / 2 - Math.abs(this.trending)) * 0.15;
+          const outwardBias =
+            this.depth > 0
+              ? (this.depth - 1) * 0.1 * (this.trending > 0 ? 1 : -1)
+              : 0;
 
-          if (canBranchNow && !this.hasBranchedAtTop) {
-            this.hasBranchedAtTop = true;
+          this.swing =
+            this.trending +
+            outwardBias +
+            upwardCorrection +
+            Math.sin(this.noiseOffset) * 0.2;
 
-            // 🌱 Number of new branches depends on depth
-            let newBranches = 1 + Math.round(rand() * 2);
-            if (this.depth === 0) newBranches += 1;
-            if (this.depth === 1) newBranches += 2;
+          this.noiseOffset += 0.05;
+          this.life++;
 
-            for (let n = 0; n < newBranches; n++) {
-              // 🌿 Wider spread angles for outward growth
-              const baseSpread = Math.PI / 2; // 90° base
-              const angleOffset =
-                (rand() - 0.5) * baseSpread * (1.2 + this.depth * 0.15);
+          // ✅ Branching logic
+          if (this.depth < 2 && !this.hasBranchedAtTop) {
+            const trunkDelay =
+              this.depth === 0 ? this.lifetime * 0.35 : this.lifetime * 0.25;
 
-              this.children.push(
-                new Branch(
-                  this.x,
-                  this.y,
-                  this.trending + angleOffset,
-                  this.lifetime * (0.45 + rand() * 0.15),
-                  this.width * 0.7,
-                  this.depth + 1
-                )
-              );
+            if (this.life >= trunkDelay) {
+              this.hasBranchedAtTop = true;
+
+              // Leader for main trunk
+              if (this.depth === 0) {
+                this.children.push(
+                  new Branch(
+                    this.x,
+                    this.y,
+                    this.trending + (rand() - 0.5) * 0.1,
+                    this.lifetime * (0.7 + rand() * 0.1),
+                    this.width * 0.8,
+                    0
+                  )
+                );
+              }
+
+              // Side branches
+              const sideBranches =
+                this.depth === 0
+                  ? 6 + Math.round(rand() * 2)
+                  : 4 + Math.round(rand() * 2);
+
+              const baseSpread = Math.PI / 1.5;
+
+              for (let n = 0; n < sideBranches; n++) {
+                const angleOffset = (rand() - 0.5) * baseSpread;
+
+                this.children.push(
+                  new Branch(
+                    this.x,
+                    this.y,
+                    this.trending + angleOffset,
+                    this.lifetime * (1.125 + rand() * 0.375),
+                    this.width * 0.4,
+                    this.depth + 1
+                  )
+                );
+              }
+            }
+          }
+
+          // 🌿 Leaves on both sides of thin / near-thin branches
+          const isLeafBranch =
+            this.width <= 2 || (this.depth >= 1 && this.width <= 6);
+
+          if (isLeafBranch && rand() < 0.25) {
+            const leafStyles = ["#1f801f", "#259925", "#2bb32b", "#32cd32"];
+            const color = leafStyles[Math.floor(rand() * leafStyles.length)];
+
+            const angle1 = this.swing + (rand() - 0.5) * 1.2;
+            const angle2 = angle1 + Math.PI;
+
+            this.leaves.push(new Leaf(this.x, this.y, angle1, color));
+            this.leaves.push(new Leaf(this.x, this.y, angle2, color));
+          }
+
+          // ✅ Draw children & prune
+          for (let i = this.children.length - 1; i >= 0; i--) {
+            this.children[i].draw();
+            if (this.children[i].life >= this.children[i].lifetime) {
+              this.children.splice(i, 1);
             }
           }
         }
 
-        // 🌿 Draw child branches
-        for (let i = this.children.length - 1; i >= 0; i--) {
-          this.children[i].draw();
-          if (this.children[i].life >= this.children[i].lifetime)
-            this.children.splice(i, 1);
+        // ✅ ALWAYS animate leaves even after branch is done
+        for (const leaf of this.leaves) {
+          leaf.draw();
         }
       }
     }
 
-    // 🌳 Main trunk (slightly less vertical)
+    // 🌳 Main trunk
     const mainBranch = new Branch(
       canvas.width / 2,
       canvas.height - 15,
-      -Math.PI / 2 + (rand() - 0.5) * 0.3, // small tilt
-      (canvas.height - 15) / 3,
+      -Math.PI / 2,
+      (canvas.height - 15) / 4, // shorter trunk life
       30,
       0
     );
 
     const draw = () => {
       mainBranch.draw();
-
-      // Draw leaves 🍃
-      const time = Date.now() * 0.002;
-      for (const leaf of leaves) {
-        ctx.save();
-        ctx.translate(leaf.x, leaf.y);
-        const sway = Math.sin(time + leaf.swayOffset) * 0.2;
-        ctx.rotate(leaf.rot + sway);
-
-        const gradient = ctx.createLinearGradient(-leaf.size, 0, leaf.size, 0);
-        gradient.addColorStop(0, `rgba(46,125,50,${leaf.shade})`);
-        gradient.addColorStop(0.5, `rgba(76,175,80,${leaf.shade})`);
-        gradient.addColorStop(1, `rgba(129,199,132,${leaf.shade})`);
-
-        ctx.fillStyle = gradient;
-        ctx.strokeStyle = "#1B5E20";
-        ctx.lineWidth = 0.8;
-
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(
-          leaf.size,
-          -leaf.size * 1.5,
-          leaf.size,
-          leaf.size * 1.5,
-          0,
-          leaf.size * 2.2
-        );
-        ctx.bezierCurveTo(
-          -leaf.size,
-          leaf.size * 1.5,
-          -leaf.size,
-          -leaf.size * 1.5,
-          0,
-          0
-        );
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-
-        if (leaf.size < leaf.maxSize) leaf.size += 0.5;
-      }
-
-      // Draw flowers 🌸
-      for (const flower of flowers) {
-        ctx.save();
-        ctx.translate(flower.x, flower.y);
-        ctx.rotate(flower.rot);
-        ctx.fillStyle = "#E6A1A1";
-        ctx.beginPath();
-        ctx.ellipse(0, 0, flower.size, flower.size, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-        if (flower.size < flower.maxSize) flower.size += 0.45;
-      }
-
       requestAnimationFrame(draw);
     };
 
