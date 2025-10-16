@@ -5,6 +5,11 @@ import { useEffect, useRef, useState } from "react";
 export default function PlantCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [showText, setShowText] = useState(false);
+  const extraBranchSpawned = useRef(false);
+  const [circleTip, setCircleTip] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const [circleDone, setCircleDone] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -35,13 +40,19 @@ export default function PlantCanvas() {
       age: number;
       popDuration: number;
 
-      constructor(x: number, y: number, angle: number, color: string) {
+      constructor(
+        x: number,
+        y: number,
+        angle: number,
+        color: string,
+        sizeScale = 1
+      ) {
         this.x = x;
         this.y = y;
         this.angle = angle;
         this.color = color;
-        this.maxWidth = 15 + rand() * 6;
-        this.maxHeight = 30 + rand() * 10;
+        this.maxWidth = (15 + rand() * 6) * sizeScale;
+        this.maxHeight = (30 + rand() * 10) * sizeScale;
         this.age = 0;
         this.popDuration = 25 + rand() * 10; // shorter burst
       }
@@ -88,6 +99,10 @@ export default function PlantCanvas() {
       children: Branch[];
       hasBranchedAtTop: boolean;
       leaves: Leaf[] = [];
+      frozen: boolean = false; // ✅ new flag
+      isCircleBranch?: boolean; // ✅ add this
+      tipX?: number;
+      tipY?: number;
 
       constructor(
         x: number,
@@ -113,10 +128,28 @@ export default function PlantCanvas() {
       }
 
       draw() {
-        const doneGrowing = this.life > this.lifetime;
+        // Right at the top of draw()
+        // ✅ FIRST: detect when the circle branch finishes
+        if (this.isCircleBranch && this.life >= this.lifetime && !circleDone) {
+          setCircleTip({ x: this.x, y: this.y });
+          setCircleDone(true);
+          this.frozen = true;
+          return;
+        }
 
-        // ✅ Only branch movement, branching, and leaf spawning stop after lifetime
-        if (!doneGrowing) {
+        // ✅ THEN: respect frozen branches
+        if (this.frozen) {
+          for (const child of this.children) {
+            child.draw();
+          }
+          return;
+        }
+
+        const doneGrowing = this.life >= this.lifetime;
+
+        console.log("circleDone:", circleDone);
+        console.log("circleTip:", circleTip);
+        if (!doneGrowing && !this.frozen) {
           // ✅ Width taper
           this.width = Math.max(
             1,
@@ -160,28 +193,52 @@ export default function PlantCanvas() {
           }
 
           // ✅ Move forward
-          this.x += Math.cos(this.swing) * 3.5;
-          this.y += Math.sin(this.swing) * 3.5;
+          const step = this.isCircleBranch ? 3 : 3.5; // ✅ faster for circle
+          this.x += Math.cos(this.swing) * step;
+          this.y += Math.sin(this.swing) * step;
 
           // ✅ Curvature & sway
-          const upwardCorrection =
-            (Math.PI / 2 - Math.abs(this.trending)) * 0.15;
-          const outwardBias =
-            this.depth > 0
-              ? (this.depth - 1) * 0.1 * (this.trending > 0 ? 1 : -1)
-              : 0;
+          if (this.isCircleBranch) {
+            this.tipX = this.x;
+            this.tipY = this.y;
 
-          this.swing =
-            this.trending +
-            outwardBias +
-            upwardCorrection +
-            Math.sin(this.noiseOffset) * 0.2;
+            const straightPhase = 0.5;
+            const progress = this.life / this.lifetime;
+            if (progress < straightPhase) {
+              // Just follow the initial trending angle (grow straight)
+              this.swing = this.trending;
+            } else {
+              // Start curving after the straight phase
+              const curveProgress =
+                (progress - straightPhase) / (1 - straightPhase);
+              const curvature = Math.PI * 2 * curveProgress; // same total curvature
+              this.swing = this.trending - curvature;
+            }
+          } else {
+            // ✅ Original behavior for all normal branches
+            const upwardCorrection =
+              (Math.PI / 2 - Math.abs(this.trending)) * 0.15;
+            const outwardBias =
+              this.depth > 0
+                ? (this.depth - 1) * 0.1 * (this.trending > 0 ? 1 : -1)
+                : 0;
+
+            this.swing =
+              this.trending +
+              outwardBias +
+              upwardCorrection +
+              Math.sin(this.noiseOffset) * 0.2;
+          }
 
           this.noiseOffset += 0.05;
           this.life++;
 
           // ✅ Branching logic
-          if (this.depth < 2 && !this.hasBranchedAtTop) {
+          if (
+            !this.isCircleBranch &&
+            this.depth < 2 &&
+            !this.hasBranchedAtTop
+          ) {
             const trunkDelay =
               this.depth === 0 ? this.lifetime * 0.35 : this.lifetime * 0.25;
 
@@ -238,20 +295,29 @@ export default function PlantCanvas() {
             const angle1 = this.swing + (rand() - 0.5) * 1.2;
             const angle2 = angle1 + Math.PI;
 
-            this.leaves.push(new Leaf(this.x, this.y, angle1, color));
-            this.leaves.push(new Leaf(this.x, this.y, angle2, color));
-          }
+            // ✅ Smaller leaves if from circle branch
+            const sizeScale = this.isCircleBranch ? 0.2 : 1;
 
-          // ✅ Draw children & prune
-          for (let i = this.children.length - 1; i >= 0; i--) {
-            this.children[i].draw();
-            if (this.children[i].life >= this.children[i].lifetime) {
-              this.children.splice(i, 1);
-            }
+            this.leaves.push(
+              new Leaf(this.x, this.y, angle1, color, sizeScale)
+            );
+            this.leaves.push(
+              new Leaf(this.x, this.y, angle2, color, sizeScale)
+            );
           }
         }
 
-        // ✅ ALWAYS animate leaves even after branch is done
+        // ✅ Draw children & prune
+        for (let i = this.children.length - 1; i >= 0; i--) {
+          this.children[i].draw();
+
+          // optional prune
+          if (this.children[i].life >= this.children[i].lifetime) {
+            this.children.splice(i, 1);
+          }
+        }
+
+        // ✅ Leaves should ALWAYS animate
         for (const leaf of this.leaves) {
           leaf.draw();
         }
@@ -259,21 +325,62 @@ export default function PlantCanvas() {
     }
 
     // 🌳 Main trunk
+    const startX = canvas.width / 2;
+    const startY = canvas.height - 15;
+
     const mainBranch = new Branch(
-      canvas.width / 2,
-      canvas.height - 15,
+      startX,
+      startY,
       -Math.PI / 2,
-      (canvas.height - 15) / 3.5, // shorter trunk life
+      (canvas.height - 15) / 3.5,
       30,
       0
     );
 
+    function freezeAllBranches(branch: Branch) {
+      branch.frozen = true;
+      for (const child of branch.children) {
+        freezeAllBranches(child);
+      }
+    }
+
     const draw = () => {
       mainBranch.draw();
+
       // 🔥 Trigger text when close to end
       const remaining = mainBranch.lifetime - mainBranch.life;
       if (!showText && remaining < 60) {
         setShowText(true);
+      }
+
+      if (
+        !extraBranchSpawned.current &&
+        mainBranch.life >= mainBranch.lifetime
+      ) {
+        extraBranchSpawned.current = true;
+
+        const spawnX = startX;
+        const spawnY = startY - canvas.height * 0.3;
+        const angle = -Math.PI + (rand() - 0.5) * 0.3;
+
+        // ✅ Create the circle branch
+        const newBranch = new Branch(
+          spawnX,
+          spawnY,
+          angle,
+          mainBranch.lifetime * 1.2,
+          mainBranch.startWidth * 0.2,
+          1
+        );
+        newBranch.isCircleBranch = true;
+
+        // ✅ Freeze ONLY the existing children (not the main branch)
+        for (const child of mainBranch.children) {
+          freezeAllBranches(child);
+        }
+
+        // ✅ Replace old children with ONLY the active new branch
+        mainBranch.children = [newBranch];
       }
 
       requestAnimationFrame(draw);
@@ -285,6 +392,30 @@ export default function PlantCanvas() {
   return (
     <div className="plant-container">
       <canvas ref={canvasRef} className="plant-canvas" />
+      {circleDone && circleTip && (
+        <button
+          className="about-button"
+          onClick={() => (window.location.href = "/about")}
+          style={{
+            left: circleTip.x - 25,
+            top: circleTip.y - 25,
+            width: 50,
+            height: 50,
+            borderRadius: "50%",
+            backgroundColor: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(6px)",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+            border: "2px solid rgba(0,0,0,0.15)",
+            color: "black",
+            cursor: "pointer",
+            fontSize: "12px",
+            fontWeight: "600",
+          }}
+        >
+          About Me
+        </button>
+      )}
+
       {showText && (
         <>
           <div className="pop-text line1">
