@@ -9,7 +9,20 @@ export default function PlantCanvas() {
   const [circleTip, setCircleTip] = useState<{ x: number; y: number } | null>(
     null
   );
-  const [circleDone, setCircleDone] = useState(false);
+  const [circleTip2, setCircleTip2] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const [circleTip3, setCircleTip3] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const [circleTip4, setCircleTip4] = useState<{ x: number; y: number } | null>(
+    null
+  );
+
+  const [showAbout, setShowAbout] = useState(false);
+  const [showEducation, setShowEducation] = useState(false);
+  const [showProjects, setShowProjects] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -101,6 +114,7 @@ export default function PlantCanvas() {
       leaves: Leaf[] = [];
       frozen: boolean = false; // ✅ new flag
       isCircleBranch?: boolean; // ✅ add this
+      finished = false; // ✅ NEW FLAG to mark when a branch finishes
       tipX?: number;
       tipY?: number;
 
@@ -128,13 +142,11 @@ export default function PlantCanvas() {
       }
 
       draw() {
-        // Right at the top of draw()
-        // ✅ FIRST: detect when the circle branch finishes
-        if (this.isCircleBranch && this.life >= this.lifetime && !circleDone) {
-          setCircleTip({ x: this.x, y: this.y });
-          setCircleDone(true);
-          this.frozen = true;
-          return;
+        if (this.isCircleBranch) {
+          if (!this.finished && this.life >= this.lifetime) {
+            this.finished = true;
+            console.log("✅ Circle branch marked finished (corrected)");
+          }
         }
 
         // ✅ THEN: respect frozen branches
@@ -147,8 +159,6 @@ export default function PlantCanvas() {
 
         const doneGrowing = this.life >= this.lifetime;
 
-        console.log("circleDone:", circleDone);
-        console.log("circleTip:", circleTip);
         if (!doneGrowing && !this.frozen) {
           // ✅ Width taper
           this.width = Math.max(
@@ -202,7 +212,7 @@ export default function PlantCanvas() {
             this.tipX = this.x;
             this.tipY = this.y;
 
-            const straightPhase = 0.5;
+            const straightPhase = 0.4;
             const progress = this.life / this.lifetime;
             if (progress < straightPhase) {
               // Just follow the initial trending angle (grow straight)
@@ -232,6 +242,17 @@ export default function PlantCanvas() {
 
           this.noiseOffset += 0.05;
           this.life++;
+
+          if (
+            this.isCircleBranch &&
+            !this.finished &&
+            this.life >= this.lifetime
+          ) {
+            this.finished = true;
+            console.log(
+              "✅ Circle branch marked finished (moved check after increment)"
+            );
+          }
 
           // ✅ Branching logic
           if (
@@ -337,6 +358,11 @@ export default function PlantCanvas() {
       0
     );
 
+    let circleBranch: Branch | null = null; // ✅ NEW — store reference to the circle branch
+    let circleBranch2: Branch | null = null;
+    let circleBranch3: Branch | null = null;
+    let circleBranch4: Branch | null = null;
+
     function freezeAllBranches(branch: Branch) {
       branch.frozen = true;
       for (const child of branch.children) {
@@ -347,9 +373,69 @@ export default function PlantCanvas() {
     const draw = () => {
       mainBranch.draw();
 
-      // 🔥 Trigger text when close to end
+      if (circleBranch) {
+        console.log(
+          "circleBranch status:",
+          "life:",
+          circleBranch.life,
+          "lifetime:",
+          circleBranch.lifetime,
+          "finished:",
+          circleBranch.finished,
+          "tip:",
+          circleBranch.tipX,
+          circleBranch.tipY
+        );
+      }
+
+      if (circleBranch && circleBranch.finished && !showAbout) {
+        console.log("🔥 Circle branch finished, trying to set About Me");
+        if (
+          circleBranch.tipX !== undefined &&
+          circleBranch.tipY !== undefined
+        ) {
+          console.log("✅ Setting circleTip + showAbout");
+          setCircleTip({ x: circleBranch.tipX, y: circleBranch.tipY });
+          setShowAbout(true);
+        } else {
+          console.warn("⚠️ No tipX / tipY on finished circle branch");
+        }
+      }
+
+      if (circleBranch2 && circleBranch2.finished && !showEducation) {
+        if (
+          circleBranch2.tipX !== undefined &&
+          circleBranch2.tipY !== undefined
+        ) {
+          setCircleTip2({ x: circleBranch2.tipX, y: circleBranch2.tipY });
+          setShowEducation(true);
+        }
+      }
+
+      if (circleBranch3 && circleBranch3.finished && !showProjects) {
+        if (
+          circleBranch3.tipX !== undefined &&
+          circleBranch3.tipY !== undefined
+        ) {
+          setCircleTip3({ x: circleBranch3.tipX, y: circleBranch3.tipY });
+          setShowProjects(true);
+        }
+      }
+
+      // Then detect its finish:
+      if (circleBranch4 && circleBranch4.finished && !showContact) {
+        if (
+          circleBranch4.tipX !== undefined &&
+          circleBranch4.tipY !== undefined
+        ) {
+          setCircleTip4({ x: circleBranch4.tipX, y: circleBranch4.tipY });
+          setShowContact(true);
+        }
+      }
+
       const remaining = mainBranch.lifetime - mainBranch.life;
       if (!showText && remaining < 60) {
+        console.log("💬 Triggering showText");
         setShowText(true);
       }
 
@@ -357,30 +443,84 @@ export default function PlantCanvas() {
         !extraBranchSpawned.current &&
         mainBranch.life >= mainBranch.lifetime
       ) {
+        console.log("🌿 Spawning FOUR circle branches");
         extraBranchSpawned.current = true;
-
         const spawnX = startX;
         const spawnY = startY - canvas.height * 0.3;
-        const angle = -Math.PI + (rand() - 0.5) * 0.3;
 
-        // ✅ Create the circle branch
-        const newBranch = new Branch(
+        // Existing Left
+        const angleLeft1 = -Math.PI * 0.85 + (rand() - 0.5) * 0.15;
+        const leftBranch1 = new Branch(
           spawnX,
           spawnY,
-          angle,
+          angleLeft1,
           mainBranch.lifetime * 1.2,
           mainBranch.startWidth * 0.2,
           1
         );
-        newBranch.isCircleBranch = true;
+        leftBranch1.isCircleBranch = true;
 
-        // ✅ Freeze ONLY the existing children (not the main branch)
+        // Existing Right
+        const angleRight1 = -Math.PI * 0.1 + (rand() - 0.5) * 0.15;
+        const rightBranch1 = new Branch(
+          spawnX,
+          spawnY,
+          angleRight1,
+          mainBranch.lifetime * 1.2,
+          mainBranch.startWidth * 0.2,
+          1
+        );
+        rightBranch1.isCircleBranch = true;
+
+        // ✅ NEW EXTRA LEFT
+        const angleLeft2 = -Math.PI * 1 + (rand() - 0.5) * 0.15;
+        const leftBranch2 = new Branch(
+          spawnX,
+          spawnY,
+          angleLeft2,
+          mainBranch.lifetime * 1.15,
+          mainBranch.startWidth * 0.17,
+          1
+        );
+        leftBranch2.isCircleBranch = true;
+
+        // ✅ NEW EXTRA RIGHT
+        const angleRight2 = Math.PI * 0.1 + (rand() - 0.5) * 0.15;
+        const rightBranch2 = new Branch(
+          spawnX,
+          spawnY,
+          angleRight2,
+          mainBranch.lifetime * 1.15,
+          mainBranch.startWidth * 0.17,
+          1
+        );
+        rightBranch2.isCircleBranch = true;
+
+        // ✅ Freeze everything else
         for (const child of mainBranch.children) {
           freezeAllBranches(child);
         }
 
-        // ✅ Replace old children with ONLY the active new branch
-        mainBranch.children = [newBranch];
+        // ✅ Attach all 4
+        mainBranch.children = [
+          leftBranch1,
+          rightBranch1,
+          leftBranch2,
+          rightBranch2,
+        ];
+
+        // ✅ Keep your existing tracking
+        circleBranch = leftBranch1;
+        circleBranch2 = rightBranch1;
+        circleBranch3 = leftBranch2;
+        circleBranch4 = rightBranch2;
+
+        console.log("✅ Branches:", {
+          leftBranch1,
+          rightBranch1,
+          leftBranch2,
+          rightBranch2,
+        });
       }
 
       requestAnimationFrame(draw);
@@ -392,29 +532,6 @@ export default function PlantCanvas() {
   return (
     <div className="plant-container">
       <canvas ref={canvasRef} className="plant-canvas" />
-      {circleDone && circleTip && (
-        <button
-          className="about-button"
-          onClick={() => (window.location.href = "/about")}
-          style={{
-            left: circleTip.x - 25,
-            top: circleTip.y - 25,
-            width: 50,
-            height: 50,
-            borderRadius: "50%",
-            backgroundColor: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(6px)",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-            border: "2px solid rgba(0,0,0,0.15)",
-            color: "black",
-            cursor: "pointer",
-            fontSize: "12px",
-            fontWeight: "600",
-          }}
-        >
-          About Me
-        </button>
-      )}
 
       {showText && (
         <>
@@ -442,6 +559,66 @@ export default function PlantCanvas() {
             ))}
           </div>
         </>
+      )}
+
+      {showAbout && circleTip && (
+        <a
+          href="/about"
+          className="about-btn"
+          style={{
+            position: "absolute",
+            left: `${circleTip.x - 45}px`,
+            top: `${circleTip.y + 76}px`,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          About Me
+        </a>
+      )}
+
+      {showEducation && circleTip2 && (
+        <a
+          href="/education"
+          className="about-btn"
+          style={{
+            position: "absolute",
+            left: `${circleTip2.x - 25}px`,
+            top: `${circleTip2.y - 86}px`,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          Education
+        </a>
+      )}
+
+      {showProjects && circleTip3 && (
+        <a
+          href="/projects"
+          className="about-btn"
+          style={{
+            position: "absolute",
+            left: `${circleTip3.x + 1}px`,
+            top: `${circleTip3.y + 85}px`,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          Projects
+        </a>
+      )}
+
+      {showContact && circleTip4 && (
+        <a
+          href="/contact"
+          className="about-btn"
+          style={{
+            position: "absolute",
+            left: `${circleTip4.x + 25}px`,
+            top: `${circleTip4.y - 85}px`,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          Contact
+        </a>
       )}
     </div>
   );

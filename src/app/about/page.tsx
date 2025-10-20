@@ -159,25 +159,25 @@ export default function AboutPage() {
             ideas, exploring cozy cafés, or experimenting with color and motion.
           </p>
         </motion.div>
-        {/* Back Button */}
-        <motion.button
-          onClick={() => router.push("/")}
-          className="w-full mt-16 py-14 flex flex-col items-center justify-center space-y-3 bg-transparent backdrop-blur-sm hover:bg-green-500/10 transition-all duration-700 outline-none focus:outline-none ring-0 border-none shadow-none"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <h1 className="text-6xl font-extrabold tracking-[0.15em] text-green-100 drop-shadow-[0_0_12px_rgba(34,197,94,0.3)]">
-            BACK TO TOWER
-          </h1>
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
-            className="text-green-300 text-5xl select-none"
-          >
-            ︾
-          </motion.div>
-        </motion.button>
       </motion.div>
+      {/* Back Button */}
+      <motion.button
+        onClick={() => router.push("/")}
+        className="about-back-button w-full py-4 mt-8 flex flex-col items-center justify-center space-y-3 bg-transparent backdrop-blur-sm hover:bg-green-500/10 transition-all duration-700 outline-none focus:outline-none ring-0 border-none shadow-none"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.97 }}
+      >
+        <h1 className="text-6xl font-extrabold tracking-[0.15em] text-green-100 drop-shadow-[0_0_12px_rgba(34,197,94,0.3)]">
+          BACK TO TOWER
+        </h1>
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
+          className="text-green-300 text-5xl select-none"
+        >
+          ︾
+        </motion.div>
+      </motion.button>
     </motion.div>
   );
 }

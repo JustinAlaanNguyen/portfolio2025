@@ -50,19 +50,71 @@
     transform: translateY(0px) scale(1);
   }
 }
+
 .plant-container {
   position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0; /* ✅ create stacking context */
 }
 
-.plant-canvas {
+
+.plant-canvas,
+.ui-canvas {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1; /* canvas behind */
-  pointer-events: none;
+  width: 100%;
+  height: 100%;
 }
 
-.about-button {
-  position: absolute !important;
-  z-index: 9999 !important;
+.plant-canvas {
+  pointer-events: none; /* tree doesn’t block clicks */
+   z-index: 0;
+}
+
+.ui-canvas {
+  pointer-events: auto; /* allows button clicks */
+}
+.about-btn {
+  background: #6c8e4f;    /* earthy green */
+  border: 3px solid #3e4a2f;  /* darker outline */
+  color: #f3f6e4;         /* light text for contrast */
+  padding: 0;
+  width: 176px;
+  height: 176px;
+  border-radius: 50%;
+  font-weight: bold;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9999;
+  pointer-events: auto;
+  font-size: 0.8rem;
+  transform: translate(-50%, -50%) scale(0);
+  animation: popIn 0.5s ease-out forwards;
+}
+
+.about-btn:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  transition: transform 0.15s ease-out;
+}
+
+
+@keyframes popIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
 }

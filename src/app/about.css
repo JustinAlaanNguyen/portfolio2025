@@ -1,18 +1,20 @@
 
 /* === ABOUT PAGE STYLES (Refined, No Blur Except Title) === */
-
 .about-container {
   position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  align-items: center;        
+  justify-content: flex-start;   /* ✅ Allow content to grow downward */
+  overflow-y: auto;              /* ✅ Enable scrolling if needed */
+  overflow-x: hidden;
   background: linear-gradient(to bottom, #f5f2eb, #e7dfd3);
   color: #3a3a2e;
   font-family: "Inter", sans-serif;
+  padding-bottom: 4rem;          /* ✅ This now actually works */
 }
+
 
 /* Subtle gradient light motion */
 .about-background {
@@ -85,10 +87,10 @@
 
 .about-underline {
   position: absolute;
-  left: 4%;
+  left: 5%;
   bottom: 0.9rem;
   transform: translateX(-50%);
-  width: 45rem;
+  width: clamp(12rem, 60vw, 44rem); /* scales with screen width */
   height: 3px;
   border-radius: 9999px;
   background: linear-gradient(to right, #c4d6b0, #a3b38b);
@@ -97,8 +99,8 @@
 /* === AVATAR === */
 .about-avatar {
   position: relative;
-  width: clamp(20rem, 28vw, 22rem);
-  height: clamp(20rem, 28vw, 22rem);
+    width: clamp(12rem, 30vw, 20rem);
+  height: clamp(12rem, 30vw, 20rem);
   border-radius: 50%;
   overflow: hidden;
   border: 4px solid transparent;
@@ -127,7 +129,8 @@
 
 /* === CARD === */
 .about-card {
-  width: 100%;
+   max-width: 640px;
+  margin: 0 auto;
   background: rgba(255, 250, 240, 0.92);
   border: 1px solid rgba(216, 210, 176, 0.6);
   border-radius: 2rem;
@@ -159,6 +162,15 @@
   max-width: 640px;
   margin: 0 auto;
 }
+.about-back-button {
+  position: sticky;
+  bottom: 2rem;
+  width: auto;
+  align-self: center;
+  transform: none;
+  z-index: 10;
+}
+
 
 /* === ANIMATION === */
 @keyframes pulse {
@@ -189,3 +201,16 @@
   }
 }
 
+@media (max-height: 700px) {
+  .about-content {
+    padding-bottom: 6rem; /* Creates room for the button */
+  }
+}
+
+
+@media (max-width: 480px) {
+  .about-avatar {
+    width: 14rem;
+    height: 14rem;
+  }
+}
