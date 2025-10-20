@@ -1,0 +1,43 @@
+/* Allow full-page scrolling */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: auto;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+.skills-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sky area */
+.skills-surface {
+  background: linear-gradient(to bottom, #87ceeb, #b0e0ff);
+  height: 30vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 20px;
+  position: relative;
+}
+
+/* Title sitting on the surface */
+.skills-title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #222;
+  margin: 0;
+}
+
+/* Underground area — scrollable container */
+.skills-underground {
+  background: #3d2b1f;
+  min-height: 2000px; /* You can increase this if needed */
+  position: relative;
+  overflow: visible; /* Don’t clip the canvas */
+}
