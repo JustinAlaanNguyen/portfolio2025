@@ -9,24 +9,18 @@ export default function RootsCanvas() {
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
 
+    // === Handle resizing and DPR scaling ===
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       const width = window.innerWidth;
       const height =
         document.querySelector(".skills-underground")?.clientHeight || 500;
 
-      // set actual pixel size
       canvas.width = width * dpr;
       canvas.height = height * dpr;
-
-      // scale drawing operations so coordinates remain logical
       ctx.scale(dpr, dpr);
-
-      // keep CSS size consistent
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
-
-      // crisp images
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
     };
@@ -34,6 +28,7 @@ export default function RootsCanvas() {
     resize();
     window.addEventListener("resize", resize);
 
+    // === Configuration ===
     const subRootConfig: Record<
       number,
       { angle: number; lifetimeScale: number; widthScale: number }
@@ -43,14 +38,12 @@ export default function RootsCanvas() {
       2: { angle: -0.3, lifetimeScale: 0.6, widthScale: 0.5 },
     };
 
-    // Skill for each main branch (depth 1)
     const branchSkills: Record<number, string> = {
       0: "React",
       1: "JavaScript",
       2: "C++",
     };
 
-    // Skill for each sub-root that grows from those branches (depth 2)
     const subRootSkills: Record<number, string> = {
       0: "SQL",
       1: "HTML",
@@ -66,10 +59,11 @@ export default function RootsCanvas() {
       width: number;
       lifetime: number;
       life: number;
-      children: Root[];
       depth: number;
       done: boolean;
+      children: Root[];
       branchIndex?: number;
+      subRootIndex?: number;
 
       constructor(
         x: number,
@@ -94,6 +88,7 @@ export default function RootsCanvas() {
         if (this.done) return;
 
         const finished = this.life >= this.lifetime;
+
         if (!finished) {
           const progress = this.life / this.lifetime;
           const newWidth = Math.max(1, this.width * (1 - progress));
@@ -124,7 +119,7 @@ export default function RootsCanvas() {
           this.y = nextY;
           this.life++;
 
-          // branching
+          // === Branching logic ===
           if (this.depth === 0) {
             if (this.life === 20) {
               const r = new Root(
@@ -135,32 +130,32 @@ export default function RootsCanvas() {
                 this.width * 0.6,
                 1
               );
-              r.branchIndex = 0; // first main branch
+              r.branchIndex = 0; // React
               this.children.push(r);
             }
+
             if (this.life === 25) {
-              // === Main second branch ===
               const r1 = new Root(
                 this.x,
                 this.y,
-                this.angle - 1.4,
+                this.angle - 1.5,
                 this.lifetime * 0.9,
                 this.width * 0.6,
                 1
               );
-              r1.branchIndex = 1; // second main branch
+              r1.branchIndex = 1; // JavaScript
               this.children.push(r1);
 
-              // === New sub-root branch (CSS) ===
+              // === CSS Subroot (manual branch) ===
               const r2 = new Root(
                 this.x,
                 this.y,
-                this.angle - 0.6, // slightly different angle
+                this.angle - 1.4,
                 this.lifetime * 0.7,
                 this.width * 0.5,
                 1
               );
-              r2.branchIndex = 3; // 👈 matches subRootSkills[3] = "CSS"
+              r2.subRootIndex = 3; // CSS
               this.children.push(r2);
             }
 
@@ -173,10 +168,11 @@ export default function RootsCanvas() {
                 this.width * 0.6,
                 1
               );
-              r.branchIndex = 2; // third main branch
+              r.branchIndex = 2; // C++
               this.children.push(r);
             }
           }
+
           if (this.depth === 1 && this.life === 15) {
             const cfg = subRootConfig[this.branchIndex ?? 0];
             if (cfg) {
@@ -188,7 +184,7 @@ export default function RootsCanvas() {
                 this.width * cfg.widthScale,
                 2
               );
-              subRoot.branchIndex = this.branchIndex; // ✅ propagate index
+              subRoot.subRootIndex = this.branchIndex; // map sub-root to its pair skill
               this.children.push(subRoot);
             }
           }
@@ -196,14 +192,14 @@ export default function RootsCanvas() {
           this.done = true;
           endpoints.push({ x: this.x, y: this.y });
 
-          if (this.depth === 0 && !this.branchIndex) {
+          // === Education bubble (main root end) ===
+          if (this.depth === 0) {
             const imgSrc = skillIcons["Education"];
             bubbles.push(new Bubble(this.x, this.y + 30, imgSrc));
           }
 
-          // === bubble assignment logic ===
+          // === Skill bubble logic ===
           if (this.depth === 1 && this.branchIndex !== undefined) {
-            // main branch bubble
             const skillName = branchSkills[this.branchIndex];
             if (skillName) {
               const imgSrc = skillIcons[skillName];
@@ -211,9 +207,8 @@ export default function RootsCanvas() {
             }
           }
 
-          if (this.depth === 2 && this.branchIndex !== undefined) {
-            // sub-root bubble
-            const skillName = subRootSkills[this.branchIndex];
+          if (this.subRootIndex !== undefined) {
+            const skillName = subRootSkills[this.subRootIndex];
             if (skillName) {
               const imgSrc = skillIcons[skillName];
               bubbles.push(new Bubble(this.x, this.y + 20, imgSrc));
@@ -231,6 +226,11 @@ export default function RootsCanvas() {
       y: number;
       radius: number;
       img: HTMLImageElement;
+      spawnTime: number;
+      animDuration: number;
+      isHovered: boolean;
+      targetScale: number;
+      currentScale: number;
 
       constructor(x: number, y: number, imgSrc: string) {
         this.x = x;
@@ -238,34 +238,66 @@ export default function RootsCanvas() {
         this.radius = 35;
         this.img = new Image();
         this.img.src = imgSrc;
+
+        this.spawnTime = performance.now();
+        this.animDuration = 800;
+
+        this.isHovered = false;
+        this.targetScale = 1;
+        this.currentScale = 0; // start at 0 for pop-in animation
+      }
+
+      checkHover(mx: number, my: number) {
+        const dx = mx - this.x;
+        const dy = my - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        this.isHovered = distance < this.radius;
       }
 
       draw() {
-        // draw the background circle first
+        const elapsed = performance.now() - this.spawnTime;
+        const progress = Math.min(elapsed / this.animDuration, 1);
+
+        // smooth ease-out
+        const easeOutBack = (t: number) => {
+          const c1 = 1.70158;
+          const c3 = c1 + 1;
+          return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+        };
+
+        const eased = easeOutBack(progress);
+
+        // hover target scale
+        this.targetScale = this.isHovered ? 1.15 : 1;
+
+        // smooth interpolate current scale
+        this.currentScale += (this.targetScale - this.currentScale) * 0.1;
+
+        const opacity = Math.min(progress * 1.2, 1);
+
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.translate(this.x, this.y);
+        ctx.scale(eased * this.currentScale, eased * this.currentScale);
+
+        // background circle
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = "#f5f5f5";
         ctx.fill();
-        ctx.strokeStyle = "#1b1006";
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(27, 16, 6, 0.4)"; // softer edge
+        ctx.lineWidth = 2; // thinner line
+        ctx.shadowColor = "rgba(0, 0, 0, 0.25)";
+        ctx.shadowBlur = this.isHovered ? 8 : 3;
         ctx.stroke();
 
-        // image rendering (safe)
+        // draw the image if loaded
         if (this.img.complete && this.img.naturalWidth > 0) {
           const size = this.radius * 1.3;
-          ctx.drawImage(
-            this.img,
-            this.x - size / 2,
-            this.y - size / 2,
-            size,
-            size
-          );
-        } else {
-          this.img.onload = () => this.draw();
-          this.img.onerror = () => {
-            console.warn(`❌ Image failed to load: ${this.img.src}`);
-          };
+          ctx.drawImage(this.img, -size / 2, -size / 2, size, size);
         }
+
+        ctx.restore();
       }
 
       update() {
@@ -277,6 +309,13 @@ export default function RootsCanvas() {
     const endpoints: { x: number; y: number }[] = [];
     const bubbles: Bubble[] = [];
     const allRoots: Root[] = [];
+    let mouseX = 0;
+    let mouseY = 0;
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+    });
 
     const startX = window.innerWidth / 2;
     const startY = 10;
@@ -292,7 +331,6 @@ export default function RootsCanvas() {
 
     let rootsDone = false;
 
-    // map each label to logo path
     const skillIcons: Record<string, string> = {
       HTML: "/logos/html.png",
       JavaScript: "/logos/javascript.png",
@@ -304,8 +342,6 @@ export default function RootsCanvas() {
       CSS: "/logos/css.png",
     };
 
-    const labels = Object.keys(skillIcons);
-
     // === Animate ===
     function animate() {
       if (!rootsDone) {
@@ -315,12 +351,12 @@ export default function RootsCanvas() {
           activeCount += root.done ? 0 : 1;
           allRoots.push(...root.children.splice(0));
         }
-
-        if (activeCount === 0) {
-          rootsDone = true;
-        }
+        if (activeCount === 0) rootsDone = true;
       } else {
-        bubbles.forEach((b) => b.update());
+        bubbles.forEach((b) => {
+          b.checkHover(mouseX, mouseY);
+          b.update();
+        });
       }
 
       requestAnimationFrame(animate);
