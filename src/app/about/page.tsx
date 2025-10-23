@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { startAvatarVineAnimation } from "./AvatarVineAnimation";
 import { startVineAnimation } from "./VineAnimation";
-import "../about.css"; // ✅ Import your CSS file
+import "../about.css";
 
 export default function AboutPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -28,9 +28,7 @@ export default function AboutPage() {
       const avatarRect = avatarRef.current.getBoundingClientRect();
       const canvasRect = canvas.getBoundingClientRect();
 
-      // Manual tweak to align vine ring
-      const manualNudge = { dx: 14, dy: -28 };
-
+      const manualNudge = { dx: 10, dy: -20 };
       const x =
         avatarRect.left -
         canvasRect.left +
@@ -47,80 +45,84 @@ export default function AboutPage() {
       stopBorderVine = startAvatarVineAnimation(canvas, { x, y, r });
     };
 
-    // ✅ Wait until layout is fully painted and animations settle
     const delay = setTimeout(() => {
       requestAnimationFrame(startAnimations);
-    }, 400); // 300–500ms gives layout time to stabilize
+    }, 400);
 
     return () => {
       clearTimeout(delay);
-      if (stopBorderVine) stopBorderVine();
-      if (stopBackgroundVine) stopBackgroundVine();
+      stopBorderVine?.();
+      stopBackgroundVine?.();
     };
   }, []);
 
   return (
     <motion.div
       className="about-container"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{
-        duration: 1.2,
-        ease: [0.16, 1, 0.3, 1],
-      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
     >
+      {/* Background Layers */}
       <div className="about-background" />
       <canvas ref={canvasRef} className="about-canvas" />
       <div className="about-overlay" />
 
-      <motion.div
-        className="about-content"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
-      >
-        {/* Title */}
+      {/* Content Split Layout */}
+      <div className="about-content-wrapper">
+        {/* Left Side - Avatar + Vines */}
         <motion.div
-          className="about-title-wrapper"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: {
-              transition: { staggerChildren: 0.07, delayChildren: 0.3 },
-            },
-          }}
+          ref={avatarRef}
+          className="about-avatar-section"
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 1, ease: "easeOut" }}
         >
-          <h1 className="about-title">
+          <div className="about-avatar-inner">
+            <img src="/avatar.png" alt="Avatar" className="about-avatar-img" />
+          </div>
+        </motion.div>
+
+        {/* Right Side - Text */}
+        <motion.div
+          className="about-text-section"
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+        >
+          <motion.h1
+            className="about-title"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: {
+                transition: { staggerChildren: 0.05, delayChildren: 0.2 },
+              },
+            }}
+          >
             {"Justin Alaan-Nguyen".split("").map((char, i) => (
               <motion.span
                 key={i}
-                className="inline-block origin-left"
+                className="inline-block"
                 variants={{
-                  hidden: {
-                    opacity: 0,
-                    scaleX: 0,
-                    transformOrigin: "0% 50%", // Grow from left edge
-                  },
+                  hidden: { opacity: 0, scaleX: 0 },
                   visible: {
                     opacity: 1,
                     scaleX: 1,
                     transition: {
-                      duration: 0.6,
+                      duration: 0.4,
                       ease: [0.16, 1, 0.3, 1],
-                      delay: i * 0.08, // letter delay
+                      delay: i * 0.05,
                     },
                   },
                 }}
-                style={{
-                  display: "inline-block",
-                  transformOrigin: "0% 50%", // ensures growth from left
-                }}
+                style={{ display: "inline-block" }}
               >
                 {char === " " ? "\u00A0" : char}
               </motion.span>
             ))}
-          </h1>
+          </motion.h1>
 
           <motion.div
             className="about-underline"
@@ -128,56 +130,37 @@ export default function AboutPage() {
             animate={{ scaleX: 1 }}
             transition={{ delay: 1.2, duration: 0.8 }}
           />
-        </motion.div>
 
-        {/* Avatar */}
-        <motion.div
-          ref={avatarRef} // ✅ ADD THIS
-          className="about-avatar"
-          whileHover={{ scale: 1.05, rotate: 0.5 }}
-          transition={{ type: "spring", stiffness: 200 }}
-        >
-          <div className="about-avatar-inner">
-            <img src="/avatar.png" alt="Avatar" className="about-avatar-img" />
-          </div>
-        </motion.div>
-
-        {/* Description Card */}
-        <motion.div
-          className="about-card"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3, duration: 1.2, ease: "easeOut" }}
-        >
           <h2 className="about-role">Front-End Developer</h2>
           <p className="about-description">
-            I’m passionate about crafting intuitive, elegant interfaces that
-            feel both alive and effortless. Inspired by nature’s balance, I
-            blend structure with creativity — turning ideas into warm, living
-            digital experiences. When I’m not coding, I’m sketching interface
-            ideas, exploring cozy cafés, or experimenting with color and motion.
+            I craft interactive, nature-inspired interfaces that feel alive and
+            intuitive. My focus is on blending structure with creativity —
+            transforming digital spaces into warm, breathing experiences. When
+            I’m not coding, you’ll find me sketching UI ideas, exploring cozy
+            cafés, or experimenting with color and motion.
           </p>
+
+          <motion.button
+            onClick={() => router.push("/")}
+            className="about-back-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <span>BACK TO TOWER</span>
+            <motion.div
+              animate={{ y: [0, 6, 0] }}
+              transition={{
+                repeat: Infinity,
+                duration: 1.3,
+                ease: "easeInOut",
+              }}
+              className="arrow"
+            >
+              ︾
+            </motion.div>
+          </motion.button>
         </motion.div>
-      </motion.div>
-      {/* Back Button */}
-      <motion.button
-        onClick={() => router.push("/")}
-        className="about-back-button w-full py-4 mt-8 flex flex-col items-center justify-center space-y-3 bg-transparent backdrop-blur-sm hover:bg-green-500/10 transition-all duration-700 outline-none focus:outline-none ring-0 border-none shadow-none"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.97 }}
-      >
-        <h1 className="text-6xl font-extrabold tracking-[0.15em] text-green-100 drop-shadow-[0_0_12px_rgba(34,197,94,0.3)]">
-          BACK TO TOWER
-        </h1>
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
-          className="text-green-300 text-5xl select-none"
-        >
-          ︾
-        </motion.div>
-      </motion.button>
+      </div>
     </motion.div>
   );
 }

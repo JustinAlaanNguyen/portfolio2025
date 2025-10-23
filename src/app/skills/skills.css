@@ -15,9 +15,9 @@ body {
   flex-direction: column;
 }
 
-/* Sky area */
+/* --- Sky area --- */
 .skills-surface {
-  background: linear-gradient(to bottom, #87ceeb, #b0e0ff);
+  background: linear-gradient(to bottom, #87ceeb 0%, #b0e0ff 100%);
   height: 30vh;
   display: flex;
   align-items: flex-end;
@@ -26,18 +26,74 @@ body {
   position: relative;
 }
 
-/* Title sitting on the surface */
 .skills-title {
   font-size: 3rem;
   font-weight: bold;
   color: #222;
   margin: 0;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.6);
 }
 
-/* Underground area — scrollable container */
+/* --- Underground (Soil) area --- */
 .skills-underground {
-  background: #3d2b1f;
-  min-height: 2000px; /* You can increase this if needed */
   position: relative;
-  overflow: visible; /* Don’t clip the canvas */
+  min-height: 2000px;
+  overflow: visible;
+  background:
+    /* Subtle grain texture using radial gradients */ radial-gradient(
+      circle at 20% 30%,
+      rgba(40, 26, 13, 0.3) 0%,
+      transparent 80%
+    ),
+    radial-gradient(
+      circle at 70% 80%,
+      rgba(60, 40, 20, 0.25) 0%,
+      transparent 75%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(30, 20, 10, 0.2) 0%,
+      transparent 70%
+    ),
+    /* Soil color gradient layers for depth */
+      linear-gradient(
+        to bottom,
+        #5a3b23 0%,
+        #4a2f1c 20%,
+        #3b2516 50%,
+        #2e1b10 80%,
+        #1d1108 100%
+      );
+  background-blend-mode: overlay;
+  background-size: cover;
+  color: #fff;
+}
+
+/* Optional: subtle soil particles */
+.skills-underground::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px
+    ),
+    radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 4px 4px, 6px 6px;
+  mix-blend-mode: overlay;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* Optional: dark soil shadow gradient at top (surface meeting point) */
+.skills-underground::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+  z-index: 1;
+  pointer-events: none;
 }

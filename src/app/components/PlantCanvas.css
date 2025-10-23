@@ -59,7 +59,6 @@
   z-index: 0; /* ✅ create stacking context */
 }
 
-
 .plant-canvas,
 .ui-canvas {
   position: absolute;
@@ -71,19 +70,19 @@
 
 .plant-canvas {
   pointer-events: none; /* tree doesn’t block clicks */
-   z-index: 0;
+  z-index: 0;
 }
 
 .ui-canvas {
   pointer-events: auto; /* allows button clicks */
 }
 .about-btn {
-  background: #6c8e4f;    /* earthy green */
-  border: 3px solid #3e4a2f;  /* darker outline */
-  color: #f3f6e4;         /* light text for contrast */
+  background: #6c8e4f; /* earthy green */
+  border: 3px solid #3e4a2f; /* darker outline */
+  color: #f3f6e4; /* light text for contrast */
   padding: 0;
-  width: 176px;
-  height: 176px;
+  width: 8.5vw;
+  height: 8.5vw;
   border-radius: 50%;
   font-weight: bold;
   text-decoration: none;
@@ -102,7 +101,6 @@
   transform: translate(-50%, -50%) scale(1.1);
   transition: transform 0.15s ease-out;
 }
-
 
 @keyframes popIn {
   0% {

@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import "./Sky.css";
 
 export default function Sky() {
   // arrays for repeated elements
-
   const treesGreen1 = Array.from({ length: 6 });
   const treesPurple1 = Array.from({ length: 6 });
   const treesBlue1 = Array.from({ length: 6 });
@@ -20,14 +19,17 @@ export default function Sky() {
 
   const leaves10 = Array.from({ length: 10 });
 
-  // waves randomized inline styles to mimic the Sass random behaviour
-  const waves = useMemo(() => {
-    return Array.from({ length: 100 }).map(() => {
+  // 🌊 waves generated client-side only (prevents SSR mismatch)
+  const [waves, setWaves] = useState<React.CSSProperties[]>([]);
+
+  useEffect(() => {
+    const generated = Array.from({ length: 100 }).map(() => {
       const size = Math.floor(Math.random() * 90) + 40; // 40..129
       const top = Math.floor(Math.random() * 200); // 0..199
       const left = Math.floor(Math.random() * 400); // 0..399 vw-ish
       const opacity = Math.random() * 0.5 + 0.05; // 0.05..0.55
       const delay = Math.random() * 25; // 0..25s
+
       return {
         width: `${size}px`,
         top: `${top}px`,
@@ -36,6 +38,8 @@ export default function Sky() {
         animationDelay: `${delay}s`,
       } as React.CSSProperties;
     });
+
+    setWaves(generated);
   }, []);
 
   return (
@@ -104,6 +108,7 @@ export default function Sky() {
           </div>
         </div>
 
+        {/* 💧 Waves only render after client-side generation */}
         <div className="water">
           {waves.map((style, i) => (
             <div key={i} className="wave" style={style} />
