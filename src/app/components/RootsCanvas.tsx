@@ -9,6 +9,7 @@ export default function RootsCanvas() {
 
   // === Skill Descriptions (customizable!) ===
   const skillDescriptions: Record<string, string> = {
+    // 🌿 Current Skills
     HTML: "The foundation of all web pages — defines structure and content.",
     CSS: "Styles and layouts that bring structure to life visually.",
     JavaScript: "Adds interactivity and dynamic behavior to the web.",
@@ -17,7 +18,23 @@ export default function RootsCanvas() {
     React: "A powerful UI library for building component-based web apps.",
     SQL: "Structured Query Language for managing and querying databases.",
     "C++": "A performant, low-level language for system and game development.",
+
+    // 🌱 Developing Skills
+    Figma: "A collaborative design tool for creating modern UI/UX mockups.",
+    FigJam: "An online whiteboard for brainstorming and team collaboration.",
+    Framer: "A visual tool for interactive design and prototyping.",
   };
+
+  const currentSkills = [
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "SQL",
+    "C++",
+  ];
+  const developingSkills = ["Figma", "FigJam", "Framer"];
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -124,23 +141,18 @@ export default function RootsCanvas() {
         const wasHovered = this.isHovered;
         this.isHovered = Math.sqrt(dx * dx + dy * dy) < this.radius;
 
-        // 🔹 Notify React when hover starts or ends (only for current skills)
+        // Identify which skill the bubble represents
         const skillName = Object.keys(skillIcons).find((k) =>
           this.img.src.includes(skillIcons[k].split("/").pop()!)
         );
 
         if (
-          this.isHovered &&
-          !wasHovered &&
-          currentSkills.includes(skillName!)
+          skillName &&
+          (currentSkills.includes(skillName) ||
+            developingSkills.includes(skillName))
         ) {
-          setHoveredSkill(skillName!);
-        } else if (
-          !this.isHovered &&
-          wasHovered &&
-          currentSkills.includes(skillName!)
-        ) {
-          setHoveredSkill(null);
+          if (this.isHovered && !wasHovered) setHoveredSkill(skillName);
+          else if (!this.isHovered && wasHovered) setHoveredSkill(null);
         }
       }
 
@@ -317,10 +329,13 @@ export default function RootsCanvas() {
 
           // 🌳 Add bubble at tip
           // 🌳 Add bubble only for main root (education) — not side roots
+          // 🌳 Replace Education bubble with a wooden sign
           if (this.depth === 0 && this.direction === "main") {
-            bubbles.push(
-              new Bubble(this.x, this.y + 30, skillIcons["Education"])
-            );
+            textLabels.push({
+              x: this.x,
+              y: this.y + 70,
+              text: "My Education",
+            });
           }
 
           // === LEFT ROOT → spawn subroots for Current Skills ===
@@ -412,7 +427,7 @@ export default function RootsCanvas() {
       const startY = 10;
       const targetDepth = canvas.height * 0.75;
       const stepSize = Math.max(2, Math.min(4, canvas.height / 300));
-      const lifetime = (targetDepth / stepSize) * 0.8;
+      const lifetime = (targetDepth / stepSize) * 0.4;
 
       allRoots.push(
         new Root(startX, startY, Math.PI / 2, lifetime, 18, 0, stepSize)
@@ -570,9 +585,29 @@ export default function RootsCanvas() {
     <>
       <canvas ref={canvasRef} className="roots-canvas" />
 
-      {/* 🌿 Floating Skill Info Card */}
-      <div className={`skill-info-card ${hoveredSkill ? "visible" : ""}`}>
-        {hoveredSkill && (
+      {/* 🌿 Current Skill Card (Left) */}
+      <div
+        className={`skill-info-card current ${
+          hoveredSkill && currentSkills.includes(hoveredSkill) ? "visible" : ""
+        }`}
+      >
+        {hoveredSkill && currentSkills.includes(hoveredSkill) && (
+          <>
+            <h2>{hoveredSkill}</h2>
+            <p>{skillDescriptions[hoveredSkill]}</p>
+          </>
+        )}
+      </div>
+
+      {/* 🌱 Developing Skill Card (Right) */}
+      <div
+        className={`skill-info-card developing ${
+          hoveredSkill && developingSkills.includes(hoveredSkill)
+            ? "visible"
+            : ""
+        }`}
+      >
+        {hoveredSkill && developingSkills.includes(hoveredSkill) && (
           <>
             <h2>{hoveredSkill}</h2>
             <p>{skillDescriptions[hoveredSkill]}</p>
