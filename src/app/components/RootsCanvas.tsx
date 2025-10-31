@@ -213,7 +213,8 @@ export default function RootsCanvas() {
         | "main"
         | "developing"
         | "current-sub"
-        | "developing-sub";
+        | "developing-sub"
+        | "education";
       stepSize: number;
 
       constructor(
@@ -230,7 +231,8 @@ export default function RootsCanvas() {
           | "main"
           | "developing"
           | "current-sub"
-          | "developing-sub" = "main"
+          | "developing-sub"
+          | "education" = "main"
       ) {
         this.x = x;
         this.y = y;
@@ -412,6 +414,10 @@ export default function RootsCanvas() {
     const textLabels: { x: number; y: number; text: string }[] = [];
     let mouseX = 0;
     let mouseY = 0;
+    // === 🎓 Education Nodes ===
+    const educationRoots: Root[] = [];
+    const educationPlaques: { x: number; y: number; title: string }[] = [];
+    let educationTriggered = false;
 
     canvas.addEventListener("mousemove", (e) => {
       const rect = canvas.getBoundingClientRect();
@@ -432,6 +438,99 @@ export default function RootsCanvas() {
       allRoots.push(
         new Root(startX, startY, Math.PI / 2, lifetime, 18, 0, stepSize)
       );
+    }
+
+    // === 🎓 Education trigger on scroll ===
+    function setupEducationObserver() {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !educationTriggered) {
+              educationTriggered = true;
+              console.log("🎓 Education section triggered!");
+
+              // Find the "My Education" label
+              const eduLabel = textLabels.find(
+                (l) => l.text === "My Education"
+              );
+              if (eduLabel) {
+                // Spawn 2–3 education roots spreading downward
+                // === 🌿 Enhanced Education Root System ===
+                const eduProfiles = [
+                  // left root
+                  {
+                    xOffset: -65,
+                    yOffset: -20,
+                    angle: Math.PI / 2 + 0.75,
+                    lifetime: 50,
+                    width: 4.8,
+                  },
+                  // center root
+                  {
+                    xOffset: 0,
+                    yOffset: -20,
+                    angle: Math.PI / 2,
+                    lifetime: 50,
+                    width: 5.5,
+                  },
+                  // right root
+                  {
+                    xOffset: 65,
+                    yOffset: -20,
+                    angle: Math.PI / 2 - 0.75,
+                    lifetime: 50,
+                    width: 4.8,
+                  },
+                ];
+
+                // 🌱 Grow them one by one, 400ms apart
+                eduProfiles.forEach((p, i) => {
+                  setTimeout(() => {
+                    educationRoots.push(
+                      new Root(
+                        eduLabel.x + p.xOffset,
+                        eduLabel.y + p.yOffset,
+                        p.angle,
+                        p.lifetime,
+                        p.width,
+                        1,
+                        2.5,
+                        "education"
+                      )
+                    );
+                  }, i * 400);
+                });
+
+                // Add wooden plaques at root tips after delay
+                // 🎓 Add official diploma info on wooden plaques
+                setTimeout(() => {
+                  educationPlaques.push(
+                    {
+                      x: eduLabel.x - 160,
+                      y: eduLabel.y + 80,
+                      title: "Computer Programming and Analysis",
+                    },
+                    {
+                      x: eduLabel.x + 0,
+                      y: eduLabel.y + 140,
+                      title: "Seneca Polytechnic (With Honours, 2024)",
+                    },
+                    {
+                      x: eduLabel.x + 160,
+                      y: eduLabel.y + 80,
+                      title: "Ontario College Advanced Diploma",
+                    }
+                  );
+                }, 1800);
+              }
+            }
+          });
+        },
+        { threshold: 0.4 }
+      );
+
+      const eduMarker = document.getElementById("education-marker");
+      if (eduMarker) observer.observe(eduMarker);
     }
 
     function animate() {
@@ -563,6 +662,69 @@ export default function RootsCanvas() {
 
       ctx.restore();
 
+      // === 🎓 Draw Education Roots and Plaques ===
+      for (const root of educationRoots) root.draw();
+
+      educationPlaques.forEach(({ x, y, title }) => {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.globalAlpha = 0.95;
+
+        // === Sign size ===
+        const width = 250;
+        const height = 70;
+
+        // === Wooden sign base ===
+        const grad = ctx.createLinearGradient(-width / 2, 0, width / 2, 0);
+        grad.addColorStop(0, "#7a4f27");
+        grad.addColorStop(0.5, "#9c6b3d");
+        grad.addColorStop(1, "#5a3b1a");
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(-width / 2, -height / 2, width, height, 12);
+        ctx.fill();
+
+        // === Text styling ===
+        ctx.font = "bold 18px 'Cormorant', serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#f4e1c1";
+
+        // === Auto line-wrap function ===
+        const wrapText = (text: string, maxWidth: number): string[] => {
+          const words = text.split(" ");
+          const lines: string[] = [];
+          let currentLine = words[0];
+
+          for (let i = 1; i < words.length; i++) {
+            const testLine = currentLine + " " + words[i];
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth - 20) {
+              // push and start a new line
+              lines.push(currentLine);
+              currentLine = words[i];
+            } else {
+              currentLine = testLine;
+            }
+          }
+          lines.push(currentLine);
+          return lines;
+        };
+
+        // === Draw wrapped text ===
+        const lines = wrapText(title, width);
+        const lineHeight = 20;
+        const totalTextHeight = lines.length * lineHeight;
+        const startY = -totalTextHeight / 2 + 10;
+
+        lines.forEach((line, i) => {
+          ctx.fillText(line, 0, startY + i * lineHeight);
+        });
+
+        ctx.restore();
+      });
+
       animationRef.current = requestAnimationFrame(animate);
     }
 
@@ -574,6 +736,7 @@ export default function RootsCanvas() {
     }
 
     start();
+    setupEducationObserver();
     window.addEventListener("resize", start);
     return () => {
       window.removeEventListener("resize", start);
@@ -584,6 +747,10 @@ export default function RootsCanvas() {
   return (
     <>
       <canvas ref={canvasRef} className="roots-canvas" />
+      <div
+        id="education-marker"
+        style={{ position: "absolute", bottom: "200px" }}
+      />
 
       {/* 🌿 Current Skill Card (Left) */}
       <div

@@ -105,3 +105,8 @@
     right: 2vw;
   }
 }
+
+.skills-underground.education-active {
+  filter: brightness(1.05) contrast(1.1);
+  transition: filter 1s ease;
+}
