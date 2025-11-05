@@ -1,6 +1,7 @@
 "use client";
 import "../skills/skills.css";
 import RootsCanvas from "@/app/components/RootsCanvas";
+import { PreviewProvider } from "@/app/context/PreviewContext";
 
 export default function SkillsPage() {
   return (
@@ -10,7 +11,9 @@ export default function SkillsPage() {
       </div>
 
       <div className="skills-underground">
-        <RootsCanvas />
+        <PreviewProvider>
+          <RootsCanvas />
+        </PreviewProvider>
       </div>
     </div>
   );

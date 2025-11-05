@@ -1,40 +1,21 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import "./RootsCanvas.css";
+import { usePreview } from "@/app/context/PreviewContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function RootsCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
   const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
-
-  // === Skill Descriptions (customizable!) ===
-  const skillDescriptions: Record<string, string> = {
-    // 🌿 Current Skills
-    HTML: "The foundation of all web pages — defines structure and content.",
-    CSS: "Styles and layouts that bring structure to life visually.",
-    JavaScript: "Adds interactivity and dynamic behavior to the web.",
-    TypeScript:
-      "A superset of JavaScript that adds type safety and scalability.",
-    React: "A powerful UI library for building component-based web apps.",
-    SQL: "Structured Query Language for managing and querying databases.",
-    "C++": "A performant, low-level language for system and game development.",
-
-    // 🌱 Developing Skills
-    Figma: "A collaborative design tool for creating modern UI/UX mockups.",
-    FigJam: "An online whiteboard for brainstorming and team collaboration.",
-    Framer: "A visual tool for interactive design and prototyping.",
-  };
-
-  const currentSkills = [
-    "HTML",
-    "CSS",
-    "JavaScript",
-    "TypeScript",
-    "React",
-    "SQL",
-    "C++",
-  ];
-  const developingSkills = ["Figma", "FigJam", "Framer"];
+  const {
+    previewSignPos,
+    setPreviewSignPos,
+    selectedSkill,
+    setSelectedSkill,
+    skillDescriptions,
+    skillIcons,
+  } = usePreview();
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -61,38 +42,19 @@ export default function RootsCanvas() {
     // === 🌿 Configurations ===
     const subRootProfiles = {
       developing: [
-        { angle: 1.7, lifetime: 70, width: 6, stepSize: 2.5 },
-        { angle: 2.3, lifetime: 120, width: 7, stepSize: 2.2 },
-        { angle: 2.7, lifetime: 140, width: 5, stepSize: 2.8 },
+        { angle: 0.5, lifetime: 170, width: 6, stepSize: 0.8 },
+        { angle: 1.5, lifetime: 170, width: 7, stepSize: 0.5 },
+        { angle: 2.5, lifetime: 170, width: 5, stepSize: 0.8 },
       ],
       current: [
-        { angle: 2.0, lifetime: 100, width: 6, stepSize: 2.0 },
-        { angle: 1.6, lifetime: 100, width: 6, stepSize: 2.0 },
-        { angle: 1.2, lifetime: 100, width: 5, stepSize: 2.0 },
-        { angle: 0.8, lifetime: 100, width: 7, stepSize: 2.0 },
-        { angle: 0.4, lifetime: 100, width: 7, stepSize: 2.0 },
-        { angle: 0, lifetime: 100, width: 6, stepSize: 2.4 },
-        { angle: -0.3, lifetime: 100, width: 5, stepSize: 2.8 },
+        { angle: 3.2, lifetime: 150, width: 6, stepSize: 2 },
+        { angle: 2.9, lifetime: 150, width: 6, stepSize: 2 },
+        { angle: 2.6, lifetime: 150, width: 5, stepSize: 2 },
+        { angle: 2.3, lifetime: 150, width: 7, stepSize: 2 },
+        { angle: 3.1, lifetime: 150, width: 7, stepSize: 1.3 },
+        { angle: 2.7, lifetime: 150, width: 6, stepSize: 1.3 },
+        { angle: 2.3, lifetime: 150, width: 5, stepSize: 1.3 },
       ],
-    };
-
-    const skillIcons: Record<string, string> = {
-      // 🌿 Current Skills
-      HTML: "/logos/html.png",
-      CSS: "/logos/css.png",
-      JavaScript: "/logos/javascript.png",
-      TypeScript: "/logos/typescript.png",
-      React: "/logos/react.png",
-      SQL: "/logos/mysql.png",
-      "C++": "/logos/cpp.png",
-
-      // 🌱 Developing Skills
-      Figma: "/logos/figma.png",
-      FigJam: "/logos/figjam.png",
-      Framer: "/logos/framer.png",
-
-      // 🎓 Root bubble
-      Education: "/logos/education.png",
     };
 
     // === Skill assignment indices ===
@@ -153,6 +115,8 @@ export default function RootsCanvas() {
         ) {
           if (this.isHovered && !wasHovered) setHoveredSkill(skillName);
           else if (!this.isHovered && wasHovered) setHoveredSkill(null);
+
+          // ✅ Handle click to "select" skill permanently
         }
       }
 
@@ -208,10 +172,10 @@ export default function RootsCanvas() {
       done: boolean;
       children: Root[];
       direction?:
-        | "left"
-        | "right"
-        | "main"
+        | "current"
         | "developing"
+        | "preview"
+        | "main"
         | "current-sub"
         | "developing-sub"
         | "education";
@@ -226,10 +190,10 @@ export default function RootsCanvas() {
         depth: number,
         stepSize: number,
         direction:
-          | "left"
-          | "right"
-          | "main"
+          | "current"
           | "developing"
+          | "preview"
+          | "main"
           | "current-sub"
           | "developing-sub"
           | "education" = "main"
@@ -293,27 +257,43 @@ export default function RootsCanvas() {
               new Root(
                 this.x,
                 this.y,
-                this.angle - 1.7,
-                this.lifetime * 0.4,
+                this.angle + 1,
+                this.lifetime * 0.3,
                 this.width * 0.6,
                 1,
                 this.stepSize,
-                "left"
+                "current"
               )
             );
           }
-          if (this.depth === 0 && this.life === 30) {
+          if (this.depth === 0 && this.life === 70) {
             // RIGHT → Developing Skills
             this.children.push(
               new Root(
                 this.x,
                 this.y,
                 this.angle + 0.8,
+                this.lifetime * 0.3,
+                this.width * 0.6,
+                1,
+                this.stepSize,
+                "developing"
+              )
+            );
+          }
+
+          if (this.depth === 0 && this.life === 40) {
+            // RIGHT → Developing Skills
+            this.children.push(
+              new Root(
+                this.x,
+                this.y,
+                this.angle - 1.6,
                 this.lifetime * 0.4,
                 this.width * 0.6,
                 1,
                 this.stepSize,
-                "right"
+                "preview"
               )
             );
           }
@@ -333,15 +313,84 @@ export default function RootsCanvas() {
           // 🌳 Add bubble only for main root (education) — not side roots
           // 🌳 Replace Education bubble with a wooden sign
           if (this.depth === 0 && this.direction === "main") {
-            textLabels.push({
+            const eduLabel = {
               x: this.x,
               y: this.y + 70,
               text: "My Education",
-            });
+            };
+            textLabels.push(eduLabel);
+
+            // 🌱 Trigger education roots right after sign spawns (once only)
+            if (!educationTriggered) {
+              educationTriggered = true;
+
+              const eduProfiles = [
+                {
+                  xOffset: -65,
+                  yOffset: -20,
+                  angle: Math.PI / 2 + 0.75,
+                  lifetime: 50,
+                  width: 4.8,
+                },
+                {
+                  xOffset: 0,
+                  yOffset: -20,
+                  angle: Math.PI / 2,
+                  lifetime: 50,
+                  width: 5.5,
+                },
+                {
+                  xOffset: 65,
+                  yOffset: -20,
+                  angle: Math.PI / 2 - 0.75,
+                  lifetime: 50,
+                  width: 4.8,
+                },
+              ];
+
+              // 🌿 Grow the education roots one by one, 400ms apart
+              eduProfiles.forEach((p, i) => {
+                setTimeout(() => {
+                  educationRoots.push(
+                    new Root(
+                      eduLabel.x + p.xOffset,
+                      eduLabel.y + p.yOffset,
+                      p.angle,
+                      p.lifetime,
+                      p.width,
+                      1,
+                      2.5,
+                      "education"
+                    )
+                  );
+                }, i * 400);
+              });
+
+              // 🎓 Add wooden plaques after roots grow
+              setTimeout(() => {
+                educationPlaques.push(
+                  {
+                    x: eduLabel.x - 160,
+                    y: eduLabel.y + 80,
+                    title: "Computer Programming and Analysis",
+                  },
+                  {
+                    x: eduLabel.x + 0,
+                    y: eduLabel.y + 140,
+                    title: "Seneca Polytechnic (With Honours, 2024)",
+                  },
+                  {
+                    x: eduLabel.x + 160,
+                    y: eduLabel.y + 80,
+                    title: "Ontario College Advanced Diploma",
+                  }
+                );
+              }, 1800);
+            }
           }
 
-          // === LEFT ROOT → spawn subroots for Current Skills ===
-          if (this.direction === "left") {
+          // === current ROOT → spawn subroots for Current Skills ===
+          if (this.direction === "current") {
             textLabels.push({
               x: this.x,
               y: this.y + 75,
@@ -364,8 +413,8 @@ export default function RootsCanvas() {
             }
           }
 
-          // === RIGHT ROOT → spawn subroots for Developing Skills ===
-          if (this.direction === "right") {
+          // === developing ROOT → spawn subroots for Developing Skills ===
+          if (this.direction === "developing") {
             textLabels.push({
               x: this.x,
               y: this.y + 75,
@@ -386,6 +435,17 @@ export default function RootsCanvas() {
                 )
               );
             }
+          }
+
+          // === developing ROOT → spawn subroots for Developing Skills ===
+          if (this.direction === "preview") {
+            const label = {
+              x: this.x,
+              y: this.y + 75,
+              text: "Skill in Preview",
+            };
+            textLabels.push(label);
+            setPreviewSignPos({ x: label.x, y: label.y }); // ✅ use context instead
           }
 
           // === SUBROOT COMPLETION → Bubbles appear at the tips ===
@@ -431,7 +491,7 @@ export default function RootsCanvas() {
 
       const startX = window.innerWidth / 2;
       const startY = 10;
-      const targetDepth = canvas.height * 0.75;
+      const targetDepth = canvas.height * 0.5;
       const stepSize = Math.max(2, Math.min(4, canvas.height / 300));
       const lifetime = (targetDepth / stepSize) * 0.4;
 
@@ -440,98 +500,28 @@ export default function RootsCanvas() {
       );
     }
 
-    // === 🎓 Education trigger on scroll ===
-    function setupEducationObserver() {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting && !educationTriggered) {
-              educationTriggered = true;
-              console.log("🎓 Education section triggered!");
+    // Add after you define bubbles and skillIcons but before animate()
 
-              // Find the "My Education" label
-              const eduLabel = textLabels.find(
-                (l) => l.text === "My Education"
-              );
-              if (eduLabel) {
-                // Spawn 2–3 education roots spreading downward
-                // === 🌿 Enhanced Education Root System ===
-                const eduProfiles = [
-                  // left root
-                  {
-                    xOffset: -65,
-                    yOffset: -20,
-                    angle: Math.PI / 2 + 0.75,
-                    lifetime: 50,
-                    width: 4.8,
-                  },
-                  // center root
-                  {
-                    xOffset: 0,
-                    yOffset: -20,
-                    angle: Math.PI / 2,
-                    lifetime: 50,
-                    width: 5.5,
-                  },
-                  // right root
-                  {
-                    xOffset: 65,
-                    yOffset: -20,
-                    angle: Math.PI / 2 - 0.75,
-                    lifetime: 50,
-                    width: 4.8,
-                  },
-                ];
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
 
-                // 🌱 Grow them one by one, 400ms apart
-                eduProfiles.forEach((p, i) => {
-                  setTimeout(() => {
-                    educationRoots.push(
-                      new Root(
-                        eduLabel.x + p.xOffset,
-                        eduLabel.y + p.yOffset,
-                        p.angle,
-                        p.lifetime,
-                        p.width,
-                        1,
-                        2.5,
-                        "education"
-                      )
-                    );
-                  }, i * 400);
-                });
+      for (const b of bubbles) {
+        const dx = mx - b.x;
+        const dy = my - b.y;
+        if (Math.sqrt(dx * dx + dy * dy) < b.radius) {
+          const skillName = Object.keys(skillIcons).find((k) =>
+            b.img.src.includes(skillIcons[k].split("/").pop()!)
+          );
 
-                // Add wooden plaques at root tips after delay
-                // 🎓 Add official diploma info on wooden plaques
-                setTimeout(() => {
-                  educationPlaques.push(
-                    {
-                      x: eduLabel.x - 160,
-                      y: eduLabel.y + 80,
-                      title: "Computer Programming and Analysis",
-                    },
-                    {
-                      x: eduLabel.x + 0,
-                      y: eduLabel.y + 140,
-                      title: "Seneca Polytechnic (With Honours, 2024)",
-                    },
-                    {
-                      x: eduLabel.x + 160,
-                      y: eduLabel.y + 80,
-                      title: "Ontario College Advanced Diploma",
-                    }
-                  );
-                }, 1800);
-              }
-            }
-          });
-        },
-        { threshold: 0.4 }
-      );
-
-      const eduMarker = document.getElementById("education-marker");
-      if (eduMarker) observer.observe(eduMarker);
-    }
+          if (skillName) {
+            setSelectedSkill((prev) => (prev === skillName ? null : skillName));
+          }
+          break;
+        }
+      }
+    });
 
     function animate() {
       const newRoots: Root[] = [];
@@ -736,51 +726,89 @@ export default function RootsCanvas() {
     }
 
     start();
-    setupEducationObserver();
+
     window.addEventListener("resize", start);
+
     return () => {
       window.removeEventListener("resize", start);
       cancelAnimationFrame(animationRef.current || 0);
     };
   }, []);
-
   return (
     <>
       <canvas ref={canvasRef} className="roots-canvas" />
-      <div
-        id="education-marker"
-        style={{ position: "absolute", bottom: "200px" }}
-      />
-
-      {/* 🌿 Current Skill Card (Left) */}
-      <div
-        className={`skill-info-card current ${
-          hoveredSkill && currentSkills.includes(hoveredSkill) ? "visible" : ""
-        }`}
-      >
-        {hoveredSkill && currentSkills.includes(hoveredSkill) && (
-          <>
-            <h2>{hoveredSkill}</h2>
-            <p>{skillDescriptions[hoveredSkill]}</p>
-          </>
-        )}
-      </div>
-
-      {/* 🌱 Developing Skill Card (Right) */}
-      <div
-        className={`skill-info-card developing ${
-          hoveredSkill && developingSkills.includes(hoveredSkill)
-            ? "visible"
-            : ""
-        }`}
-      >
-        {hoveredSkill && developingSkills.includes(hoveredSkill) && (
-          <>
-            <h2>{hoveredSkill}</h2>
-            <p>{skillDescriptions[hoveredSkill]}</p>
-          </>
-        )}
-      </div>
+      {previewSignPos && (
+        <AnimatePresence mode="wait">
+          {selectedSkill ? (
+            <motion.div
+              key={selectedSkill}
+              className="skill-card"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: 0,
+                transition: { duration: 0.45, ease: "easeOut", delay: 0.1 },
+              }}
+              exit={{
+                opacity: 0,
+                scale: 0.9,
+                y: 20,
+                transition: { duration: 0.35, ease: "easeIn", delay: 0.1 },
+              }}
+              style={{
+                left: (previewSignPos?.x ?? 0) - 165,
+                top: (previewSignPos?.y ?? 0) + 10,
+              }}
+            >
+              <div className="skill-card-header">
+                <h2>{selectedSkill}</h2>
+                <button
+                  onClick={() => setSelectedSkill(null)}
+                  className="close-btn"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="skill-card-body">
+                <img
+                  src={skillIcons[selectedSkill]}
+                  alt={selectedSkill}
+                  className="skill-icon"
+                />
+                <p>{skillDescriptions[selectedSkill]}</p>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="no-skill"
+              className="skill-card no-skill"
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: 0,
+                transition: { duration: 0.4, ease: "easeOut", delay: 0.2 },
+              }}
+              exit={{
+                opacity: 0,
+                scale: 0.9,
+                y: 15,
+                transition: { duration: 0.3, ease: "easeIn", delay: 0.1 },
+              }}
+              style={{
+                left: (previewSignPos?.x ?? 0) - 150,
+                top: (previewSignPos?.y ?? 0) + 10,
+              }}
+            >
+              <div className="no-skill-body">
+                <p>No skill selected</p>
+                <span className="hint">Click a bubble to learn more 🌱</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </>
   );
 }
