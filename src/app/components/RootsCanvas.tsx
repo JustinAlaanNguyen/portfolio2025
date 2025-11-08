@@ -7,7 +7,10 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function RootsCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
+  const [hoveredPlaque, setHoveredPlaque] = useState<string | null>(null);
   const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
+  const [hoveredPlaquePos, setHoveredPlaquePos] = useState({ x: 0, y: 0 });
+
   const {
     previewSignPos,
     setPreviewSignPos,
@@ -39,21 +42,78 @@ export default function RootsCanvas() {
       ctx.imageSmoothingQuality = "high";
     }
 
+    const baseWidth = 1440; // baseline design width (your dev screen)
+    const baseHeight = 900; // baseline design height
+    const scaleFactor = Math.min(
+      window.innerWidth / baseWidth,
+      window.innerHeight / baseHeight
+    );
+
     // === 🌿 Configurations ===
     const subRootProfiles = {
       developing: [
-        { angle: 0.5, lifetime: 170, width: 6, stepSize: 0.8 },
-        { angle: 1.5, lifetime: 170, width: 7, stepSize: 0.5 },
-        { angle: 2.5, lifetime: 170, width: 5, stepSize: 0.8 },
+        {
+          angle: 0.5,
+          lifetime: 170 * scaleFactor,
+          width: 6 * scaleFactor,
+          stepSize: 0.8 * scaleFactor,
+        },
+        {
+          angle: 1.5,
+          lifetime: 170 * scaleFactor,
+          width: 7 * scaleFactor,
+          stepSize: 0.5 * scaleFactor,
+        },
+        {
+          angle: 2.5,
+          lifetime: 170 * scaleFactor,
+          width: 5 * scaleFactor,
+          stepSize: 0.8 * scaleFactor,
+        },
       ],
       current: [
-        { angle: 3.2, lifetime: 150, width: 6, stepSize: 2 },
-        { angle: 2.9, lifetime: 150, width: 6, stepSize: 2 },
-        { angle: 2.6, lifetime: 150, width: 5, stepSize: 2 },
-        { angle: 2.3, lifetime: 150, width: 7, stepSize: 2 },
-        { angle: 3.1, lifetime: 150, width: 7, stepSize: 1.3 },
-        { angle: 2.7, lifetime: 150, width: 6, stepSize: 1.3 },
-        { angle: 2.3, lifetime: 150, width: 5, stepSize: 1.3 },
+        {
+          angle: 3.2,
+          lifetime: 150 * scaleFactor,
+          width: 6 * scaleFactor,
+          stepSize: 2 * scaleFactor,
+        },
+        {
+          angle: 2.9,
+          lifetime: 150 * scaleFactor,
+          width: 6 * scaleFactor,
+          stepSize: 2 * scaleFactor,
+        },
+        {
+          angle: 2.6,
+          lifetime: 150 * scaleFactor,
+          width: 5 * scaleFactor,
+          stepSize: 2 * scaleFactor,
+        },
+        {
+          angle: 2.3,
+          lifetime: 150 * scaleFactor,
+          width: 7 * scaleFactor,
+          stepSize: 2 * scaleFactor,
+        },
+        {
+          angle: 3.1,
+          lifetime: 150 * scaleFactor,
+          width: 7 * scaleFactor,
+          stepSize: 1.3 * scaleFactor,
+        },
+        {
+          angle: 2.7,
+          lifetime: 150 * scaleFactor,
+          width: 6 * scaleFactor,
+          stepSize: 1.3 * scaleFactor,
+        },
+        {
+          angle: 2.3,
+          lifetime: 150 * scaleFactor,
+          width: 5 * scaleFactor,
+          stepSize: 1.3 * scaleFactor,
+        },
       ],
     };
 
@@ -87,7 +147,7 @@ export default function RootsCanvas() {
       constructor(x: number, y: number, imgSrc: string) {
         this.x = x;
         this.y = y;
-        this.radius = 35;
+        this.radius = 35 * scaleFactor; // scaled radius
         this.img = new Image();
         this.img.src = imgSrc;
         this.spawnTime = performance.now();
@@ -267,7 +327,7 @@ export default function RootsCanvas() {
             );
           }
           if (this.depth === 0 && this.life === 70) {
-            // RIGHT → Developing Skills
+            // LEFT → Developing Skills
             this.children.push(
               new Root(
                 this.x,
@@ -283,13 +343,13 @@ export default function RootsCanvas() {
           }
 
           if (this.depth === 0 && this.life === 40) {
-            // RIGHT → Developing Skills
+            // RIGHT → Skill preview
             this.children.push(
               new Root(
                 this.x,
                 this.y,
                 this.angle - 1.6,
-                this.lifetime * 0.4,
+                this.lifetime * 0.5,
                 this.width * 0.6,
                 1,
                 this.stepSize,
@@ -320,72 +380,90 @@ export default function RootsCanvas() {
             };
             textLabels.push(eduLabel);
 
-            // 🌱 Trigger education roots right after sign spawns (once only)
             if (!educationTriggered) {
               educationTriggered = true;
 
-              const eduProfiles = [
-                {
-                  xOffset: -65,
-                  yOffset: -20,
-                  angle: Math.PI / 2 + 0.75,
-                  lifetime: 50,
-                  width: 4.8,
-                },
-                {
-                  xOffset: 0,
-                  yOffset: -20,
-                  angle: Math.PI / 2,
-                  lifetime: 50,
-                  width: 5.5,
-                },
-                {
-                  xOffset: 65,
-                  yOffset: -20,
-                  angle: Math.PI / 2 - 0.75,
-                  lifetime: 50,
-                  width: 4.8,
-                },
-              ];
+              // === 🌱 Root #1: From "My Education" → "Seneca Polytechnic, 2024"
+              const senecaRoot = new Root(
+                eduLabel.x,
+                eduLabel.y - 10,
+                Math.PI / 2,
+                40,
+                5,
+                1,
+                2.5,
+                "education"
+              );
+              educationRoots.push(senecaRoot);
 
-              // 🌿 Grow the education roots one by one, 400ms apart
-              eduProfiles.forEach((p, i) => {
-                setTimeout(() => {
-                  educationRoots.push(
-                    new Root(
-                      eduLabel.x + p.xOffset,
-                      eduLabel.y + p.yOffset,
-                      p.angle,
-                      p.lifetime,
-                      p.width,
-                      1,
-                      2.5,
-                      "education"
-                    )
-                  );
-                }, i * 400);
-              });
-
-              // 🎓 Add wooden plaques after roots grow
+              // === 🌿 Wait for first root to grow, then spawn next
               setTimeout(() => {
-                educationPlaques.push(
-                  {
-                    x: eduLabel.x - 160,
-                    y: eduLabel.y + 80,
-                    title: "Computer Programming and Analysis",
-                  },
-                  {
-                    x: eduLabel.x + 0,
-                    y: eduLabel.y + 140,
-                    title: "Seneca Polytechnic (With Honours, 2024)",
-                  },
-                  {
-                    x: eduLabel.x + 160,
-                    y: eduLabel.y + 80,
-                    title: "Ontario College Advanced Diploma",
-                  }
+                educationPlaques.push({
+                  x: senecaRoot.x,
+                  y: senecaRoot.y + 40,
+                  title: "Seneca Polytechnic, 2024",
+                });
+
+                // === 🌱 Root #2: From "Seneca Polytechnic" → "Computer Programming and Analysis"
+                const cpaRoot = new Root(
+                  senecaRoot.x,
+                  senecaRoot.y + 40,
+                  Math.PI / 2 + 0.05,
+                  40,
+                  4.5,
+                  2,
+                  2.4,
+                  "education"
                 );
-              }, 1800);
+                educationRoots.push(cpaRoot);
+
+                setTimeout(() => {
+                  educationPlaques.push({
+                    x: cpaRoot.x,
+                    y: cpaRoot.y + 40,
+                    title: "Computer Programming and Analysis",
+                  });
+
+                  // === 🌳 Roots from "Computer Programming and Analysis" to two plaques
+                  const leftBranch = new Root(
+                    cpaRoot.x - 50,
+                    cpaRoot.y + 40,
+                    Math.PI / 2 + 0.7,
+                    60,
+                    3.8,
+                    3,
+                    2.3,
+                    "education"
+                  );
+
+                  const rightBranch = new Root(
+                    cpaRoot.x + 50,
+                    cpaRoot.y + 40,
+                    Math.PI / 2 - 0.7,
+                    60,
+                    3.8,
+                    3,
+                    2.3,
+                    "education"
+                  );
+
+                  educationRoots.push(leftBranch, rightBranch);
+
+                  // Add plaques at tips slightly delayed for animation sync
+                  setTimeout(() => {
+                    educationPlaques.push({
+                      x: leftBranch.x - 10,
+                      y: leftBranch.y + 40,
+                      title: "Ontario Advanced Diploma 2024",
+                    });
+                    educationPlaques.push({
+                      x: rightBranch.x + 10,
+                      y: rightBranch.y + 40,
+                      title: "President’s Honour List 2023",
+                    });
+                  }, 1200);
+                }, 1200);
+              }, 1000);
             }
           }
 
@@ -452,14 +530,20 @@ export default function RootsCanvas() {
           if (this.direction === "current-sub") {
             const skill =
               currentSkills[currentSkillIndex % currentSkills.length];
-            bubbles.push(new Bubble(this.x, this.y + 25, skillIcons[skill]));
+            bubbles.push(
+              new Bubble(this.x, this.y + 25 * scaleFactor, skillIcons[skill])
+            );
+
             currentSkillIndex++;
           }
 
           if (this.direction === "developing-sub") {
             const skill =
               developingSkills[developingSkillIndex % developingSkills.length];
-            bubbles.push(new Bubble(this.x, this.y + 25, skillIcons[skill]));
+            bubbles.push(
+              new Bubble(this.x, this.y + 25 * scaleFactor, skillIcons[skill])
+            );
+
             developingSkillIndex++;
           }
         }
@@ -483,6 +567,23 @@ export default function RootsCanvas() {
       const rect = canvas.getBoundingClientRect();
       mouseX = e.clientX - rect.left;
       mouseY = e.clientY - rect.top;
+
+      // 🎓 Detect hover over education plaques
+      let hovering: string | null = null;
+      let hoverPos = { x: 0, y: 0 };
+
+      for (const { x, y, title } of educationPlaques) {
+        const dx = mouseX - x;
+        const dy = mouseY - y;
+        if (Math.abs(dx) < 125 && Math.abs(dy) < 35) {
+          hovering = title;
+          hoverPos = { x, y };
+          break;
+        }
+      }
+
+      setHoveredPlaque(hovering);
+      setHoveredPlaquePos(hoverPos);
     });
 
     function initRoots() {
@@ -491,12 +592,24 @@ export default function RootsCanvas() {
 
       const startX = window.innerWidth / 2;
       const startY = 10;
-      const targetDepth = canvas.height * 0.5;
-      const stepSize = Math.max(2, Math.min(4, canvas.height / 300));
+
+      // 🌿 SCALE FIX: define a scaling factor based on screen width
+      const baseWidth = 1440; // design baseline width
+      const scaleFactor = window.innerWidth / baseWidth;
+
+      // 🌿 SCALE FIX: adjust vertical depth and step sizes proportionally
+      const targetDepth = canvas.height * 0.6 * scaleFactor;
+      const stepSize = Math.max(
+        2,
+        Math.min(4, (canvas.height / 300) * scaleFactor)
+      );
       const lifetime = (targetDepth / stepSize) * 0.4;
 
+      // 🌿 SCALE FIX: also scale root width slightly for balance
+      const rootWidth = 18 * scaleFactor;
+
       allRoots.push(
-        new Root(startX, startY, Math.PI / 2, lifetime, 18, 0, stepSize)
+        new Root(startX, startY, Math.PI / 2, lifetime, rootWidth, 0, stepSize)
       );
     }
 
@@ -555,97 +668,94 @@ export default function RootsCanvas() {
         const id = `${x}-${y}-${text}`;
         if (!signSpawnTimes[id]) signSpawnTimes[id] = performance.now();
 
-        const elapsed = (performance.now() - signSpawnTimes[id]) / 800; // 0.8s animation
+        const elapsed = (performance.now() - signSpawnTimes[id]) / 800;
         const t = Math.min(elapsed, 1);
 
-        // Easing function (pop/bounce feel)
+        // easing animation
         const easeOutBack = (t: number) => {
           const c1 = 1.70158;
           const c3 = c1 + 1;
           return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
         };
+
         const scale = easeOutBack(t);
         const opacity = Math.min(t * 1.5, 1);
 
-        const boardWidth = 180;
-        const boardHeight = 50;
-
-        // 🪶 Raise sign position slightly
-        const boardY = y - boardHeight / 2 - 40;
+        // === Polished Natural Wood Plank ===
+        const boardWidth = 200;
+        const boardHeight = 55;
 
         ctx.save();
         ctx.globalAlpha = opacity;
-        ctx.translate(x, y - 40); // animate from slightly below
+        ctx.translate(x, y - 45);
         ctx.scale(scale, scale);
 
-        // Wood grain gradient
-        const woodGradient = ctx.createLinearGradient(
+        // Smooth rich wood gradient
+        const grad = ctx.createLinearGradient(
           -boardWidth / 2,
-          0,
+          -boardHeight / 2,
           boardWidth / 2,
-          0
+          boardHeight / 2
         );
-        woodGradient.addColorStop(0, "#6b4226");
-        woodGradient.addColorStop(0.5, "#8b5a2b");
-        woodGradient.addColorStop(1, "#5c3921");
+        grad.addColorStop(0, "#795836");
+        grad.addColorStop(0.5, "#A57A4D");
+        grad.addColorStop(1, "#6B4A2F");
+        ctx.fillStyle = grad;
 
-        // Draw wooden board
-        ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 4;
+        // Rounded polished plank
         ctx.beginPath();
-
-        // Slightly uneven edges for realism
-        // Draw wooden board (no random jitter)
-        ctx.beginPath();
-        ctx.moveTo(-boardWidth / 2, -boardHeight / 2);
-        ctx.lineTo(boardWidth / 2, -boardHeight / 2);
-        ctx.lineTo(boardWidth / 2, boardHeight / 2);
-        ctx.lineTo(-boardWidth / 2, boardHeight / 2);
-        ctx.closePath();
-
-        ctx.fillStyle = woodGradient;
+        ctx.roundRect(
+          -boardWidth / 2,
+          -boardHeight / 2,
+          boardWidth,
+          boardHeight,
+          12
+        );
         ctx.fill();
 
-        // Add subtle horizontal wood lines
-        ctx.strokeStyle = "rgba(255,255,255,0.1)";
+        // Clean soft border
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(40, 25, 10, 0.5)";
+        ctx.stroke();
+
+        // Subtle horizontal grain lines
+        ctx.strokeStyle = "rgba(255,255,255,0.15)";
         ctx.lineWidth = 1;
-        for (let i = -boardHeight / 2; i < boardHeight / 2; i += 6) {
+        for (let i = -boardHeight / 2 + 6; i < boardHeight / 2; i += 7) {
           ctx.beginPath();
-          ctx.moveTo(-boardWidth / 2 + 4, i);
-          ctx.lineTo(boardWidth / 2 - 4, i + Math.random() * 2 - 1);
+          ctx.moveTo(-boardWidth / 2 + 10, i);
+          ctx.lineTo(boardWidth / 2 - 10, i + 1);
           ctx.stroke();
         }
 
-        // Wood border
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "rgba(30,20,10,0.5)";
-        ctx.stroke();
-
-        // Metal nails
-        const nailRadius = 3;
-        const nailOffsetX = boardWidth / 2 - 10;
-        const nailOffsetY = boardHeight / 2 - 10;
-        const nails = [
-          [-nailOffsetX, -nailOffsetY],
-          [nailOffsetX, -nailOffsetY],
+        // Brass rivets
+        const rivets = [
+          [-boardWidth / 2 + 12, -boardHeight / 2 + 12],
+          [boardWidth / 2 - 12, -boardHeight / 2 + 12],
         ];
-        nails.forEach(([nx, ny]) => {
+
+        rivets.forEach(([nx, ny]) => {
+          const rg = ctx.createRadialGradient(nx, ny, 0, nx, ny, 5);
+          rg.addColorStop(0, "#F4E3A1");
+          rg.addColorStop(1, "#C0A060");
+
           ctx.beginPath();
-          ctx.arc(nx, ny, nailRadius, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(220,220,220,0.8)";
+          ctx.fillStyle = rg;
+          ctx.arc(nx, ny, 4, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = "rgba(50,50,50,0.5)";
-          ctx.stroke();
         });
 
         // Engraved text
-        ctx.font = "bold 22px 'Cormorant', serif";
+        ctx.font = "600 20px 'Cormorant', serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.strokeStyle = "rgba(40,25,10,0.45)";
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "rgba(30, 15, 5, 0.6)";
-        ctx.strokeText(text, 0, 4);
-        ctx.fillStyle = "#f5e9c4";
-        ctx.fillText(text, 0, 4);
+        ctx.strokeText(text, 0, 3);
+
+        ctx.fillStyle = "#F7E8C7";
+        ctx.fillText(text, 0, 3);
 
         ctx.restore();
       });
@@ -655,16 +765,32 @@ export default function RootsCanvas() {
       // === 🎓 Draw Education Roots and Plaques ===
       for (const root of educationRoots) root.draw();
 
+      // === 🎓 Animated Education Plaques ===
       educationPlaques.forEach(({ x, y, title }) => {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.globalAlpha = 0.95;
+        const id = `${x}-${y}-${title}`;
+        if (!signSpawnTimes[id]) signSpawnTimes[id] = performance.now();
 
-        // === Sign size ===
+        const elapsed = (performance.now() - signSpawnTimes[id]) / 900;
+        const t = Math.min(elapsed, 1);
+
+        // Easing function
+        const easeOutBack = (t: number) => {
+          const c1 = 1.70158;
+          const c3 = c1 + 1;
+          return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+        };
+
+        const scale = easeOutBack(t);
+        const opacity = Math.min(t * 1.3, 1);
+
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
         const width = 250;
         const height = 70;
 
-        // === Wooden sign base ===
         const grad = ctx.createLinearGradient(-width / 2, 0, width / 2, 0);
         grad.addColorStop(0, "#7a4f27");
         grad.addColorStop(0.5, "#9c6b3d");
@@ -675,23 +801,19 @@ export default function RootsCanvas() {
         ctx.roundRect(-width / 2, -height / 2, width, height, 12);
         ctx.fill();
 
-        // === Text styling ===
         ctx.font = "bold 18px 'Cormorant', serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#f4e1c1";
 
-        // === Auto line-wrap function ===
         const wrapText = (text: string, maxWidth: number): string[] => {
           const words = text.split(" ");
           const lines: string[] = [];
           let currentLine = words[0];
-
           for (let i = 1; i < words.length; i++) {
             const testLine = currentLine + " " + words[i];
             const metrics = ctx.measureText(testLine);
             if (metrics.width > maxWidth - 20) {
-              // push and start a new line
               lines.push(currentLine);
               currentLine = words[i];
             } else {
@@ -702,7 +824,6 @@ export default function RootsCanvas() {
           return lines;
         };
 
-        // === Draw wrapped text ===
         const lines = wrapText(title, width);
         const lineHeight = 20;
         const totalTextHeight = lines.length * lineHeight;
@@ -809,6 +930,87 @@ export default function RootsCanvas() {
           )}
         </AnimatePresence>
       )}
+      {/* 🎓 Hover PDF Preview Thumbnails */}
+      {/* 🎓 Hover PDF Preview Thumbnails */}
+      <AnimatePresence>
+        {hoveredPlaque === "Ontario Advanced Diploma 2024" && (
+          <motion.div
+            key="diploma"
+            className="pdf-preview"
+            initial={{ opacity: 0, y: -40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -40 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            style={{
+              position: "absolute",
+              left: hoveredPlaquePos.x - 125, // align under sign horizontally
+              top: hoveredPlaquePos.y + 40, // slide directly below the sign
+              zIndex: 20,
+            }}
+          >
+            <motion.div
+              initial={{ y: -30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -30, opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="diploma-preview-container"
+            >
+              <a
+                href="/education/Computer Programming and Analysis - Ontario College Advanced Diploma.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="diploma-link"
+              >
+                <iframe
+                  src="/education/Computer Programming and Analysis - Ontario College Advanced Diploma.pdf#toolbar=0&navpanes=0&scrollbar=0"
+                  title="Diploma Preview"
+                  className="diploma-preview"
+                />
+                <div className="hover-overlay">View</div>
+              </a>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {hoveredPlaque === "President’s Honour List 2023" && (
+          <motion.div
+            key="honour"
+            className="pdf-preview"
+            initial={{ opacity: 0, y: -40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -40 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            style={{
+              position: "absolute",
+              left: hoveredPlaquePos.x - 125,
+              top: hoveredPlaquePos.y + 40,
+              zIndex: 20,
+            }}
+          >
+            <motion.div
+              initial={{ y: -30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -30, opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="diploma-preview-container"
+            >
+              <a
+                href="/education/Presidents_Honour_List.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="diploma-link"
+              >
+                <iframe
+                  src="/education/Presidents_Honour_List.pdf#toolbar=0&navpanes=0&scrollbar=0"
+                  title="President’s Honour List"
+                  className="diploma-preview"
+                />
+                <div className="hover-overlay">View</div>
+              </a>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

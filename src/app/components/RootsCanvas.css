@@ -102,3 +102,66 @@
   color: #5c4833;
   opacity: 0.8;
 }
+
+.pdf-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pdf-thumbnail {
+  width: 180px;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pdf-thumbnail:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.diploma-preview-container {
+  position: relative;
+  display: inline-block;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  width: 250px; /* same width as the wooden sign */
+  height: 160px; /* shorter, proportionate height */
+  background: #1a120a; /* subtle dark backdrop */
+}
+
+.diploma-preview {
+  width: 100%;
+  height: 100%;
+  border: none;
+  object-fit: cover; /* fills container neatly */
+  transform: scale(1.02); /* remove white PDF borders */
+  pointer-events: none; /* ensures only link hover triggers */
+}
+
+.hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  color: #fff;
+  font-size: 24px;
+  font-family: "Cormorant", serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.diploma-link:hover .hover-overlay {
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 1;
+  cursor: pointer;
+}
