@@ -7,7 +7,13 @@ export default function SkillsPage() {
   return (
     <div className="skills-page">
       <div className="skills-surface">
-        <h1 className="skills-title">My Skills</h1>
+        <div className="skills-surface">
+          <img
+            src="/myskill/myskill.png"
+            alt="My Skills"
+            className="skills-title-image"
+          />
+        </div>
       </div>
 
       <div className="skills-underground">

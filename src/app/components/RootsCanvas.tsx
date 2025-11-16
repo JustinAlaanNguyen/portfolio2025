@@ -54,65 +54,65 @@ export default function RootsCanvas() {
       developing: [
         {
           angle: 0.5,
-          lifetime: 170 * scaleFactor,
-          width: 6 * scaleFactor,
-          stepSize: 0.8 * scaleFactor,
+          lifetime: 170,
+          width: 6,
+          stepSize: 0.8,
         },
         {
           angle: 1.5,
-          lifetime: 170 * scaleFactor,
-          width: 7 * scaleFactor,
-          stepSize: 0.5 * scaleFactor,
+          lifetime: 170,
+          width: 7,
+          stepSize: 0.5,
         },
         {
           angle: 2.5,
-          lifetime: 170 * scaleFactor,
-          width: 5 * scaleFactor,
-          stepSize: 0.8 * scaleFactor,
+          lifetime: 170,
+          width: 5,
+          stepSize: 0.8,
         },
       ],
       current: [
         {
           angle: 3.2,
-          lifetime: 150 * scaleFactor,
-          width: 6 * scaleFactor,
-          stepSize: 2 * scaleFactor,
+          lifetime: 150,
+          width: 6,
+          stepSize: 2,
         },
         {
           angle: 2.9,
-          lifetime: 150 * scaleFactor,
-          width: 6 * scaleFactor,
-          stepSize: 2 * scaleFactor,
+          lifetime: 150,
+          width: 6,
+          stepSize: 2,
         },
         {
           angle: 2.6,
-          lifetime: 150 * scaleFactor,
-          width: 5 * scaleFactor,
-          stepSize: 2 * scaleFactor,
+          lifetime: 150,
+          width: 5,
+          stepSize: 2,
         },
         {
           angle: 2.3,
-          lifetime: 150 * scaleFactor,
-          width: 7 * scaleFactor,
-          stepSize: 2 * scaleFactor,
+          lifetime: 150,
+          width: 7,
+          stepSize: 2,
         },
         {
           angle: 3.1,
-          lifetime: 150 * scaleFactor,
-          width: 7 * scaleFactor,
-          stepSize: 1.3 * scaleFactor,
+          lifetime: 150,
+          width: 7,
+          stepSize: 1.3,
         },
         {
           angle: 2.7,
-          lifetime: 150 * scaleFactor,
-          width: 6 * scaleFactor,
-          stepSize: 1.3 * scaleFactor,
+          lifetime: 150,
+          width: 6,
+          stepSize: 1.3,
         },
         {
           angle: 2.3,
-          lifetime: 150 * scaleFactor,
-          width: 5 * scaleFactor,
-          stepSize: 1.3 * scaleFactor,
+          lifetime: 150,
+          width: 5,
+          stepSize: 1.3,
         },
       ],
     };
@@ -569,13 +569,23 @@ export default function RootsCanvas() {
       mouseY = e.clientY - rect.top;
 
       // 🎓 Detect hover over education plaques
+      // 🎓 Detect hover over education plaques (card-accurate hover area)
       let hovering: string | null = null;
       let hoverPos = { x: 0, y: 0 };
 
+      const plaqueWidth = 250;
+      const plaqueHeight = 70;
+
       for (const { x, y, title } of educationPlaques) {
-        const dx = mouseX - x;
-        const dy = mouseY - y;
-        if (Math.abs(dx) < 125 && Math.abs(dy) < 35) {
+        const halfW = plaqueWidth / 2;
+        const halfH = plaqueHeight / 2;
+
+        if (
+          mouseX >= x - halfW &&
+          mouseX <= x + halfW &&
+          mouseY >= y - halfH &&
+          mouseY <= y + halfH
+        ) {
           hovering = title;
           hoverPos = { x, y };
           break;
@@ -790,6 +800,45 @@ export default function RootsCanvas() {
 
         const width = 250;
         const height = 70;
+
+        /* === Idle subtle glow when NO plaque is hovered === */
+        if (!hoveredPlaque) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(255, 230, 150, 0.15)";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(
+            -width / 2 - 3,
+            -height / 2 - 3,
+            width + 6,
+            height + 6,
+            14
+          );
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // === Subtle hover hint glow ===
+        if (hoveredPlaque === title) {
+          // only glow when NOT hovered over another plaque
+          const pulse = 0.4 + Math.sin(performance.now() / 500) * 0.2;
+
+          ctx.save();
+          ctx.globalAlpha = 0.35 * pulse;
+          ctx.strokeStyle = "#f9e1b0";
+          ctx.lineWidth = 4;
+
+          ctx.beginPath();
+          ctx.roundRect(
+            -width / 2 - 3,
+            -height / 2 - 3,
+            width + 6,
+            height + 6,
+            14
+          );
+          ctx.stroke();
+          ctx.restore();
+        }
 
         const grad = ctx.createLinearGradient(-width / 2, 0, width / 2, 0);
         grad.addColorStop(0, "#7a4f27");

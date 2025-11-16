@@ -97,3 +97,68 @@ body {
   z-index: 1;
   pointer-events: none;
 }
+.skills-surface {
+  position: relative;
+}
+
+.skills-title-image {
+  width: 450px;
+  position: absolute;
+  top: 12px; /* adjust vertical */
+  z-index: 20;
+}
+.skills-underground {
+  position: relative;
+  min-height: 2000px;
+  overflow: visible;
+
+  background-image:
+    /* Fade mask */ linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 1) 100%
+    ),
+    /* --- MULTI-LAYER ROCKS --- */ url("/myskill/rocks.png"),
+    url("/myskill/rocks.png"), url("/myskill/rocks.png"),
+    url("/myskill/rocks.png"),
+    /* --- ⭐ NEW: FOSSIL LAYER ⭐ --- */ url("/myskill/fossil.png"),
+    /* Soil textures */
+      radial-gradient(
+        circle at 20% 30%,
+        rgba(40, 26, 13, 0.3) 0%,
+        transparent 80%
+      ),
+    radial-gradient(
+      circle at 70% 80%,
+      rgba(60, 40, 20, 0.25) 0%,
+      transparent 75%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(30, 20, 10, 0.2) 0%,
+      transparent 70%
+    ),
+    linear-gradient(
+      to bottom,
+      #5a3b23 0%,
+      #4a2f1c 20%,
+      #3b2516 50%,
+      #2e1b10 80%,
+      #1d1108 100%
+    );
+
+  background-repeat: no-repeat, /* fade */ repeat, repeat, repeat, repeat,
+    /* rocks */ no-repeat, /* ⭐ fossil ⭐ */ no-repeat, no-repeat, no-repeat,
+    no-repeat; /* soil */
+
+  background-size: cover, /* fade */ 140px auto, 110px auto, 70px auto,
+    160px auto, 600px auto, /* ⭐ fossil size (adjust this!) ⭐ */ cover, cover,
+    cover, cover;
+
+  background-position: 0 0, /* fade */ 40px 20px, -20px 60px, 80px -30px,
+    -50px -10px, right 300px, /* ⭐ fossil position (adjust!) ⭐ */ 0 0, 0 0,
+    0 0, 0 0;
+
+  background-blend-mode: multiply, /* fade */ normal, normal, normal, normal,
+    /* rocks */ normal, /* ⭐ fossil ⭐ */ overlay, overlay, overlay, overlay; /* soil */
+}
