@@ -146,7 +146,7 @@ export default function AboutPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
           >
-            <span>BACK TO TOWER</span>
+            <span>BACK TO TREE</span>
             <motion.div
               animate={{ y: [0, 6, 0] }}
               transition={{
