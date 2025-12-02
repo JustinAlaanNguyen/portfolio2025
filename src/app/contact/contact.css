@@ -1,0 +1,124 @@
+.contact-bg-top {
+  width: 100%;
+  min-height: 400px;
+  padding: 100px 20px 40px 20px;
+
+  background: url("/contact/hills.png") center bottom no-repeat,
+    linear-gradient(#ceddac, #f5eec8);
+
+  background-size: 100% auto, cover; /* hills.png fills width, height scales */
+  background-repeat: no-repeat, no-repeat;
+  background-position: center bottom, center;
+}
+
+.contact-bg-bottom {
+  width: 100%;
+  background: linear-gradient(#faf7e9, #d8e7d3);
+  display: flex;
+  justify-content: center;
+}
+
+/* PAGE WRAPPER */
+.contact-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px; /* removed vertical padding */
+  text-align: center;
+  font-family: sans-serif;
+}
+
+/* TITLE */
+.contact-title {
+  font-size: 50px; /* smaller */
+  font-weight: 400px;
+  letter-spacing: 0.5px;
+  color: #1f3b2c;
+  margin-bottom: 12px; /* smaller */
+}
+
+/* SUBTITLE */
+.contact-subtitle {
+  font-size: 20px; /* smaller */
+  color: #3b4d40;
+  max-width: 420px; /* slightly smaller */
+  margin-bottom: 28px; /* smaller */
+  line-height: 1.4;
+}
+
+/* FORM CARD */
+.contact-card {
+  background: #faf7e9;
+  border-radius: 16px; /* smaller */
+  padding: 28px 26px; /* smaller */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+  width: 100%;
+  max-width: 500px; /* smaller */
+}
+
+/* FORM LAYOUT */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px; /* smaller */
+}
+
+/* INPUT GROUP */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.input-group label {
+  font-weight: 600;
+  color: #203b2d;
+  margin-bottom: 4px; /* smaller */
+  font-size: 14px; /* smaller */
+}
+
+/* INPUTS + TEXTAREA */
+input,
+textarea {
+  width: 100%;
+  padding: 10px 12px; /* smaller */
+  border: 1.5px solid #d0d8c3; /* thinner */
+  border-radius: 10px; /* smaller */
+  background: #ffffff;
+  font-size: 14px; /* smaller */
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+textarea {
+  height: 50px; /* smaller */
+  resize: none;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #7fa27d;
+}
+
+/* BUTTON */
+.send-btn {
+  padding: 10px 0; /* smaller */
+  background: #2d5c3a;
+  color: white;
+  font-weight: 700;
+  font-size: 15px; /* smaller */
+  border-radius: 10px; /* smaller */
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  max-width: 200px;
+}
+
+.send-btn:hover {
+  background: #2a5335;
+  transform: translateY(-2px);
+}
+
+.send-btn:active {
+  transform: translateY(0);
+}
