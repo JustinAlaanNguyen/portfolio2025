@@ -1,6 +1,5 @@
 "use client";
 import "./projects.css";
-import AnimatedRootSystem from "@/app/components/AnimatedRootSystem";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -59,15 +58,7 @@ export default function ProjectsPage() {
 
       {/* UNDERGROUND AREA */}
       <div className="projects-underground">
-        <div className="projects-root-container">
-          <div className="root-left">
-            <AnimatedRootSystem delay={0} />
-          </div>
-
-          <div className="root-right">
-            <AnimatedRootSystem delay={0.2} />
-          </div>
-        </div>
+        <div className="projects-root-container"></div>
 
         <div className="burrow-grid">
           {projects.map((proj, index) => (
