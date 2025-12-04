@@ -1,124 +1,144 @@
-.contact-bg-top {
-  width: 100%;
-  min-height: 400px;
-  padding: 100px 20px 40px 20px;
-
-  background: url("/contact/hills.png") center bottom no-repeat,
-    linear-gradient(#ceddac, #f5eec8);
-
-  background-size: 100% auto, cover; /* hills.png fills width, height scales */
-  background-repeat: no-repeat, no-repeat;
-  background-position: center bottom, center;
+/* ===== GLOBAL RESET ===== */
+* {
+  box-sizing: border-box;
 }
 
-.contact-bg-bottom {
+/* ===== PAGE BACKGROUND ===== */
+.contact-page-bg {
+  min-height: 100vh;
   width: 100%;
-  background: linear-gradient(#faf7e9, #d8e7d3);
+  background-image: url("/contact/background.png");
+  background-size: cover;
+  background-position: center top;
+  padding: 20px;
+
+  /* Soft tint like the sky gradient in your image */
+  background-color: #eef9d1; 
+}
+
+/* ===== TOP WRAPPER ===== */
+.contact-wrapper-top {
+  text-align: center;
+  padding-top: 10vh;
+  padding-bottom: 4vh;
+}
+
+/* ===== CARD WRAPPER ===== */
+.contact-card-wrapper {
   display: flex;
   justify-content: center;
+  padding-bottom: 6vh;
 }
 
-/* PAGE WRAPPER */
-.contact-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 20px; /* removed vertical padding */
-  text-align: center;
-  font-family: sans-serif;
-}
-
-/* TITLE */
+/* ===== HEADING ===== */
 .contact-title {
-  font-size: 50px; /* smaller */
-  font-weight: 400px;
-  letter-spacing: 0.5px;
-  color: #1f3b2c;
-  margin-bottom: 12px; /* smaller */
+  font-family: "Inter", sans-serif;
+  font-size: clamp(32px, 6vw, 64px);
+  font-weight: 600;
+  color: #2d5c3a; /* deep forest green from trees */
+  margin-bottom: 12px;
+  margin-top: 12px;
 }
 
-/* SUBTITLE */
+/* ===== SUBTITLE ===== */
 .contact-subtitle {
-  font-size: 20px; /* smaller */
-  color: #3b4d40;
-  max-width: 420px; /* slightly smaller */
-  margin-bottom: 28px; /* smaller */
-  line-height: 1.4;
+  font-size: clamp(16px, 2.5vw, 22px);
+  max-width: 520px;
+  margin-bottom: 32px;
+  color: #4a704c; /* medium green for softer contrast */
+  line-height: 1.5;
+  padding: 0 10px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* FORM CARD */
+/* ===== CARD ===== */
 .contact-card {
-  background: #faf7e9;
-  border-radius: 16px; /* smaller */
-  padding: 28px 26px; /* smaller */
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+  background: #f4f0bb; /* soft light green-yellow like the lake reflection */
+  border-radius: 24px;
+  padding: 36px 28px;
   width: 100%;
-  max-width: 500px; /* smaller */
+  max-width: 520px;
+
+  /* soft, wide shadow like flat illustration style */
+  box-shadow: 0 8px 26px rgba(70, 110, 60, 0.18);
 }
 
-/* FORM LAYOUT */
+/* ===== FORM ===== */
 .contact-form {
   display: flex;
   flex-direction: column;
-  gap: 18px; /* smaller */
+  gap: 20px;
 }
 
-/* INPUT GROUP */
-.input-group {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-}
-
+/* ===== LABELS ===== */
 .input-group label {
+  font-size: 15px;
   font-weight: 600;
-  color: #203b2d;
-  margin-bottom: 4px; /* smaller */
-  font-size: 14px; /* smaller */
+  color: #2d5c3a;
+  margin-bottom: 4px;
 }
 
-/* INPUTS + TEXTAREA */
+/* ===== INPUTS ===== */
 input,
 textarea {
   width: 100%;
-  padding: 10px 12px; /* smaller */
-  border: 1.5px solid #d0d8c3; /* thinner */
-  border-radius: 10px; /* smaller */
+  padding: 12px 14px;
+  font-size: 15px;
+
+  border: 2px solid #a8d47a; /* soft medium green border */
+  border-radius: 14px;
   background: #ffffff;
-  font-size: 14px; /* smaller */
   outline: none;
-  transition: border 0.2s ease;
+  transition: border 0.25s ease, box-shadow 0.25s ease;
 }
 
 textarea {
-  height: 50px; /* smaller */
-  resize: none;
+  height: 120px;
+  resize: vertical;
 }
 
 input:focus,
 textarea:focus {
-  border-color: #7fa27d;
+  border-color: #4fa24b; /* stronger green from trees */
+  box-shadow: 0 0 6px rgba(79, 162, 75, 0.3);
 }
 
-/* BUTTON */
+/* ===== BUTTON ===== */
 .send-btn {
-  padding: 10px 0; /* smaller */
-  background: #2d5c3a;
+  padding: 14px;
+  background: #4fa24b; /* nice bright green from bush layer */
   color: white;
   font-weight: 700;
-  font-size: 15px; /* smaller */
-  border-radius: 10px; /* smaller */
+  font-size: 17px;
+  border-radius: 14px;
   border: none;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
-  max-width: 200px;
+  transition: 0.2s ease;
+  max-width: 240px;
+  margin: 0 auto;
+  box-shadow: 0 4px 10px rgba(79, 162, 75, 0.25);
 }
 
 .send-btn:hover {
-  background: #2a5335;
+  background: #3a883b;
   transform: translateY(-2px);
 }
 
 .send-btn:active {
   transform: translateY(0);
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 600px) {
+  textarea {
+    height: 100px;
+  }
+}
+
+/* ===== DESKTOP ===== */
+@media (min-width: 1200px) {
+  .contact-card {
+    padding: 44px;
+  }
 }
